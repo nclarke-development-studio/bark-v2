@@ -1,0 +1,8 @@
+<dialog title="New Workspace" width="320">
+	<vbox style="padding:10px; spacing:8px;">
+		<label text="Workspace Name" />
+		<textfield id="workspaceName"
+			placeholder="My Workspace"
+			validator="required" />
+	</vbox>
+</dialog>

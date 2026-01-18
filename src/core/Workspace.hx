@@ -3,10 +3,13 @@ package core;
 import data.SceneData;
 
 class Workspace {
+    public var name:String;
     public var scenes:Map<String, SceneData> = [];
     public var activeSceneId:String;
 
-    public function new() {}
+    public function new(?n:String) {
+        name = n;
+    }
 
     public function getActiveScene():SceneData {
         return scenes.get(activeSceneId);

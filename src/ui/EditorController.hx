@@ -1,5 +1,6 @@
 package ui;
 
+import util.SceneUtils;
 import ui.menus.Palette;
 import data.WorkspaceData;
 import core.Workspace;
@@ -193,10 +194,41 @@ class EditorController {
 		canvas.rebuildUI();
 	}
 
+	function generateSceneCopyName(base:String):String {
+		var i = 1;
+		var name = base + "_copy";
+		while (workspace.scenes.exists(name)) {
+			name = base + "_copy" + i++;
+		}
+		return name;
+	}
+
+	public function duplicateScene():Void {
+		var srcId = workspace.activeSceneId;
+		var srcScene = workspace.scenes.get(srcId);
+
+		var newId = generateSceneCopyName(srcId);
+		var clonedGraph = SceneUtils.cloneGraph(srcScene.graph);
+
+		workspace.scenes.set(newId, {
+			id: newId,
+			graph: clonedGraph
+		});
+
+		switchScene(newId);
+	}
+
 	public function deleteScene(id:String) {
 		workspace.removeScene(id);
 		switchScene(workspace.activeSceneId);
 
+		palette.rebuildScenes();
+	}
+
+	public function newWorkspace(name:String) {
+		workspace = new Workspace(name);
+		createScene("default");
+		switchScene("default");
 		palette.rebuildScenes();
 	}
 
