@@ -1,0 +1,17 @@
+<module id="bark-dialogue-editor">
+  <resources>
+    <resource path="assets/styles" prefix="styles" />
+    <resource path="assets/icons" prefix="icons" />
+    <resource path="assets/components" prefix="components" />
+  </resources>
+
+  <themes>
+    <global>
+      <style resource="styles/style.css" />
+    </global>
+  </themes>
+
+  <components>
+	<class folder="assets/components" />
+  </components >
+</module>

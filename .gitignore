@@ -1,0 +1,111 @@
+################################
+# Haxe / HaxeUI / OpenFL
+################################
+
+# Build outputs
+/bin/
+/build/
+/dist/
+/export/
+/out/
+
+# OpenFL / Lime
+/.lime/
+/Export/
+
+# Haxe compilation artifacts
+*.n
+*.obj
+*.o
+*.a
+*.lib
+*.exe
+*.dll
+*.so
+*.dylib
+*.hl
+*.js.map
+
+# HashLink
+*.hlc
+*.hlb
+
+# Neko
+*.n
+
+# HXCPP
+obj/
+cpp/
+
+################################
+# Libraries & dependencies
+################################
+
+# haxelib (usually local)
+.haxelib/
+
+# node (if using js / bundlers)
+node_modules/
+
+################################
+# IDE / Editor
+################################
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ / IDEA / Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+################################
+# OS / System
+################################
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+################################
+# Logs & temp
+################################
+
+*.log
+*.tmp
+*.swp
+*.bak
+
+################################
+# Assets (optional – uncomment if generated)
+################################
+
+# Generated assets
+# assets/generated/
+# assets/cache/
+
+################################
+# Environment
+################################
+
+.env
+.env.*

@@ -1,0 +1,28 @@
+.node {
+  background-color: #2b2b2b;
+  border-radius: 6px;
+  padding: 6px;
+  cursor: move;
+}
+
+.node-header {
+  color: white;
+  font-weight: bold;
+  cursor: move;
+}
+
+.connector-main {
+  background-color: #00ffcc;
+  border-radius: 5px;
+}
+
+.connector-sub {
+  background-color: #ffaa00;
+  border-radius: 5px;
+}
+
+.active-scene {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+}
