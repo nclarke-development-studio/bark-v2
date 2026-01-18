@@ -2,7 +2,7 @@
 	<vbox style="padding:10px; spacing:8px;">
 		<label text="Workspace Name" />
 		<textfield id="workspaceName"
-			placeholder="My Workspace"
+			placeholder="My Workspace Name"
 			validator="required" />
 	</vbox>
 </dialog>

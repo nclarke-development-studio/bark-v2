@@ -22,12 +22,5 @@ class NodeContextMenu extends Menu {
             controller.duplicateNode(node);
         };
         addComponent(duplicateItem);
-
-        var addPortItem = new MenuItem();
-        addPortItem.text = "Add Port";
-        addPortItem.onClick = _ -> {
-            controller.addPortToNode(node);
-        };
-        addComponent(addPortItem);
     }
 }

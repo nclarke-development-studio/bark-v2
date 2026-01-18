@@ -1,5 +1,6 @@
 package ui.nodes;
 
+import ui.canvas.NodeCanvas;
 import haxe.ui.containers.Grid;
 import haxe.ui.components.TextArea;
 import haxe.ui.components.TextField;
@@ -265,8 +266,10 @@ class NodeView extends VBox {
 	}
 
 	private function _onClick(_:haxe.ui.events.MouseEvent):Void {
-		// if (!selected)
-		// 	NodeCanvas.instance.selectedNodes = [];
-		setSelected(!selected);
+		if (!selected){
+			NodeCanvas.instance.selectNode(this);
+		} else {
+			NodeCanvas.instance.deselectNode(this);
+		}
 	}
 }

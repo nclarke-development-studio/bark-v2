@@ -33,7 +33,7 @@ class EditorController {
 		graph = new Graph();
 		history = new History();
 
-		workspace = new Workspace();
+		workspace = new Workspace('default');
 
 		createScene("default");
 		switchScene("default");
@@ -183,14 +183,16 @@ class EditorController {
 
 	public function switchScene(id:String) {
 		var scene = workspace.scenes.get(id);
-		if (scene == null)
+		if (scene == null){
 			return;
-
+		}
+		
 		workspace.activeSceneId = id;
-
+		
 		graph = new Graph(scene.graph);
 		history = new History();
-
+		
+		palette.rebuildScenes();
 		canvas.rebuildUI();
 	}
 
@@ -215,6 +217,7 @@ class EditorController {
 			graph: clonedGraph
 		});
 
+		palette.rebuildScenes();
 		switchScene(newId);
 	}
 
@@ -250,5 +253,42 @@ class EditorController {
 		// switchScene(data.activeSceneId);
 
 		palette.rebuildScenes();
+	}
+
+	public function renameWorkspace(newName:String) {
+		workspace.name = newName;
+	}
+
+	public function renameScene(oldId:String, newId:String):Bool {
+		if (oldId == newId) {
+			return false;
+		}
+
+		// prevent collisions
+		if (workspace.scenes.exists(newId)) {
+			return false;
+		}
+
+		var scene = workspace.scenes.get(oldId);
+		if (scene == null) {
+			return false;
+		}
+
+		// remove old entry
+		workspace.scenes.remove(oldId);
+
+		// update scene id
+		scene.id = newId;
+
+		// reinsert under new key
+		workspace.scenes.set(newId, scene);
+
+		// update active scene if needed
+		if (workspace.activeSceneId == oldId) {
+			workspace.activeSceneId = newId;
+		}
+
+		palette.rebuildScenes();
+		return true;
 	}
 }

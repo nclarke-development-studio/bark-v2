@@ -51,6 +51,7 @@ class Palette extends VBox {
 		var nodeButton2 = new Button();
 		nodeButton2.text = "Node";
 		var nodeButton3 = new Button();
+		nodeButton3.text = "Node";
 
 		makeDraggable(nodeButton, "node");
 		makeDraggable(nodeButton2, "node");
@@ -166,7 +167,6 @@ class Palette extends VBox {
 			sceneBox.addComponent(btn);
 		}
 
-		// Optional: add "+" button
 		var addBtn = new Button();
 		addBtn.text = "+ Add Scene";
 		addBtn.onClick = _ -> {

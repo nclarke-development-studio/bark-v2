@@ -6,38 +6,76 @@ import ui.nodes.NodeView;
 
 class CanvasSelection {
 	var canvas:NodeCanvas;
-	var selectionRect:Canvas;
-	var selecting = false;
+
+	public var selectionArea:Canvas;
+
+	public var selecting = false;
+
 	var start:Point;
+	var end:Point;
 
 	public function new(canvas:NodeCanvas) {
 		this.canvas = canvas;
+
+		selectionArea = new Canvas();
+		selectionArea.percentWidth = selectionArea.percentHeight = 100;
+		selectionArea.mouseEnabled = false;
 	}
 
-	public function begin(x:Float, y:Float) {
+	public function beginSelection(x:Float, y:Float) {
 		selecting = true;
 		start = new Point(x, y);
+		end = new Point(x, y);
 
-		selectionRect = new Canvas();
-		selectionRect.percentWidth = 100;
-		selectionRect.percentHeight = 100;
-		canvas.addComponent(selectionRect);
+		if (!canvas.containsComponent(selectionArea)) {
+			canvas.addComponent(selectionArea);
+		}
 	}
 
 	public function update(x:Float, y:Float) {
 		if (!selecting)
 			return;
-		selectionRect.invalidate();
+		end.x = x;
+		end.y = y;
 		updateHits(start.x, start.y, x, y);
+		drawSelectionRect();
 	}
 
-	public function end() {
+	public function endSelection() {
 		selecting = false;
-		if (selectionRect != null) {
-			canvas.removeComponent(selectionRect);
-			selectionRect = null;
+		end = null;
+		start = null;
+
+		if (canvas.containsComponent(selectionArea)) {
+			canvas.removeComponent(selectionArea);
 		}
+
+		var g = selectionArea.componentGraphics;
+		g.clear();
 	}
+
+	// function updateHits(x1:Float, y1:Float, x2:Float, y2:Float) {
+	// 	canvas.clearSelection();
+	// 	var sx = Math.min(x1, x2);
+	// 	var sy = Math.min(y1, y2);
+	// 	var ex = Math.max(x1, x2);
+	// 	var ey = Math.max(y1, y2);
+	// 	var invScale = 1.0 / canvas.contentLayer.scaleX;
+	// 	var offsetX = -canvas.contentLayer.left;
+	// 	var offsetY = -canvas.contentLayer.top;
+	// 	sx = (sx + offsetX) * invScale;
+	// 	sy = (sy + offsetY) * invScale;
+	// 	ex = (ex + offsetX) * invScale;
+	// 	ey = (ey + offsetY) * invScale;
+	// 	// TODO: optimize this
+	// 	for (n in canvas.nodes) {
+	// 		if (n.left < ex && n.left + n.width > sx && n.top < ey && n.top + n.height > sy) {
+	// 			canvas.selectNode(n);
+	// 		} else {
+	// 			canvas.deselectNode(n);
+	// 		}
+	// 	}
+	// }
 
 	function updateHits(x1:Float, y1:Float, x2:Float, y2:Float) {
 		canvas.clearSelection();
@@ -47,10 +85,40 @@ class CanvasSelection {
 		var ex = Math.max(x1, x2);
 		var ey = Math.max(y1, y2);
 
+		var invScale = 1.0 / canvas.contentLayer.scaleX;
+		var offsetX = -canvas.contentLayer.left;
+		var offsetY = -canvas.contentLayer.top;
+
+		sx = (sx + offsetX) * invScale;
+		sy = (sy + offsetY) * invScale;
+		ex = (ex + offsetX) * invScale;
+		ey = (ey + offsetY) * invScale;
+
 		for (n in canvas.nodes) {
-			if (n.left < ex && n.left + n.width > sx && n.top < ey && n.top + n.height > sy) {
+			var fullyInside = n.left >= sx && n.top >= sy && (n.left + n.width) <= ex && (n.top + n.height) <= ey;
+
+			if (fullyInside) {
 				canvas.selectNode(n);
+			} else {
+				canvas.deselectNode(n);
 			}
 		}
+	}
+
+	public function drawSelectionRect():Void {
+		if (start == null || end == null)
+			return;
+
+		var g = selectionArea.componentGraphics;
+		g.clear();
+
+		var x = Math.min(start.x, end.x);
+		var y = Math.min(start.y, end.y);
+		var w = Math.abs(end.x - start.x);
+		var h = Math.abs(end.y - start.y);
+
+		g.strokeStyle(0x66AAFF, 1, 1);
+		g.fillStyle(0x66AAFF, 0.15);
+		g.rectangle(x, y, w, h);
 	}
 }

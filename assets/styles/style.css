@@ -1,12 +1,18 @@
 .node {
-  background-color: #2b2b2b;
+  background-color: white;
   border-radius: 6px;
+  border-width: 1;
+  border-color: black;
   padding: 6px;
   cursor: move;
 }
 
+.node.selected{
+	background-color: #a7a7a7;
+}
+
 .node-header {
-  color: white;
+  /* color: white; */
   font-weight: bold;
   cursor: move;
 }

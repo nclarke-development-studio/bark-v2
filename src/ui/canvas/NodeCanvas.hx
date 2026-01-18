@@ -122,37 +122,23 @@ class NodeCanvas extends Absolute {
 		});
 	}
 
-	// }
-	// ======================================================
-	// Selection
-	// ======================================================
-
-	function updateSelectionHits(x1:Float, y1:Float, x2:Float, y2:Float) {
-		clearSelection();
-
-		var sx = Math.min(x1, x2);
-		var sy = Math.min(y1, y2);
-		var ex = Math.max(x1, x2);
-		var ey = Math.max(y1, y2);
-
-		for (n in nodes) {
-			if (n.left < ex && n.left + n.width > sx && n.top < ey && n.top + n.height > sy) {
-				selectNode(n);
-			}
-		}
-	}
-
 	// mouse utils
 
 	@:bind(this, MouseEvent.MOUSE_DOWN)
 	function onMouseDown(e:MouseEvent) {
+		if (hitEmptySpace(e)) {
+			clearSelection();
+		}
 		var localPos = globalToLocal(new Point(e.screenX, e.screenY));
-		selection.begin(localPos.x, localPos.y);
+		selection.beginSelection(localPos.x, localPos.y);
 	}
 
 	@:bind(this, MouseEvent.MOUSE_MOVE)
-	function onMouseMove(e) {
-		selection.update(mouseX, mouseY);
+	function onMouseMove(e:MouseEvent) {
+		if (selection.selecting) {
+			var localPos = globalToLocal(new Point(e.screenX, e.screenY));
+			selection.update(localPos.x, localPos.y);
+		}
 		if (connectionPreview.isPreviewing()) {
 			connectionPreview.drawPreviewCable();
 		}
@@ -160,7 +146,7 @@ class NodeCanvas extends Absolute {
 
 	@:bind(this, MouseEvent.MOUSE_UP)
 	function onMouseUp(e) {
-		selection.end();
+		selection.endSelection();
 		cancelPreview();
 	}
 
@@ -168,6 +154,13 @@ class NodeCanvas extends Absolute {
 		if (!selectedNodes.contains(n)) {
 			selectedNodes.push(n);
 			n.setSelected(true);
+		}
+	}
+
+	public function deselectNode(n:NodeView) {
+		if (selectedNodes.contains(n)) {
+			selectedNodes.remove(n);
+			n.setSelected(false);
 		}
 	}
 
