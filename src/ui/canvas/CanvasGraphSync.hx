@@ -62,26 +62,22 @@ class CanvasGraphSync {
 		}
 	}
 
-	/**
-	 * Synchronize connection views with graph data
-	 */
 	public function syncConnections():Void {
-		// Reset edge maps
 		canvas.edgesIntoMap = new Map();
 		canvas.edgesOutMap = new Map();
 
-		// Map existing connection views
+		// Map existing connection views by connection id
 		var viewMap = new StringMap<ConnectionView>();
 		for (cv in canvas.connections)
-			viewMap.set(cv.dataKey(), cv);
+			viewMap.set(cv.data.id, cv);
 
-		var validKeys = new StringMap<Bool>();
+		var validIds = new StringMap<Bool>();
 
 		for (connData in canvas.controller.graph.data.connections) {
-			var key = connData.fromPort + "->" + connData.toPort;
-			validKeys.set(key, true);
+			var id = connData.id;
+			validIds.set(id, true);
 
-			var cv = viewMap.exists(key) ? viewMap.get(key) : null;
+			var cv = viewMap.exists(id) ? viewMap.get(id) : null;
 
 			if (cv == null) {
 				var fromNode = ArrayUtils.find(canvas.nodes, n -> n.hasPort(connData.fromPort));
@@ -91,11 +87,10 @@ class CanvasGraphSync {
 					cv = new ConnectionView(fromNode, toNode, connData);
 					canvas.connections.push(cv);
 					canvas.edgeLayer.addComponent(cv);
-				}
+				} else {}
 			}
 
 			if (cv != null) {
-				// register edges
 				if (!canvas.edgesOutMap.exists(cv.fromNode.data.id))
 					canvas.edgesOutMap[cv.fromNode.data.id] = [];
 				canvas.edgesOutMap[cv.fromNode.data.id].push(cv);
@@ -110,7 +105,7 @@ class CanvasGraphSync {
 		var i = canvas.connections.length - 1;
 		while (i >= 0) {
 			var cv = canvas.connections[i];
-			if (!validKeys.exists(cv.dataKey())) {
+			if (!validIds.exists(cv.data.id)) {
 				canvas.edgeLayer.removeComponent(cv);
 				canvas.connections.splice(i, 1);
 			}

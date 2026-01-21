@@ -14,10 +14,10 @@ class AddPortCommand implements ICommand {
 	}
 
 	public function execute():Void {
-		node.ports.push(port);
+		// node.ports.push(port);
 	}
 
 	public function undo():Void {
-		node.ports.remove(port);
+		// node.ports.remove(port);
 	}
 }

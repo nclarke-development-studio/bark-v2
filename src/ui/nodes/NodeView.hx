@@ -26,6 +26,9 @@ class NodeView extends VBox {
 	public var outgoingConnections:Array<PortView> = [];
 	public var incomingConnections:Array<PortView> = [];
 
+	public var sourcePort:PortView;
+	public var targetPort:PortView;
+
 	public var fieldContainer:VBox;
 
 	public function new(data:NodeData, c:EditorController) {
@@ -43,14 +46,18 @@ class NodeView extends VBox {
 		header.addClass("node-header");
 		addComponent(header);
 
-		addPort("source", true);
-		addPort("target", true, PortDirection.Input);
+		for (port in data.ports){
+			addPort(port.id, port.name, port.direction);
+		}
+
+		// sourcePort = addPort("mainSource", "mainSource", PortDirection.Output);
+		// targetPort = addPort("mainTarget", "mainTarget", PortDirection.Input);
 		// "+" button for extra ports
 		// var addBtn = new Button();
 		// addBtn.text = "+";
 		// addBtn.onClick = _ -> addPort("Extra", false);
 		// addComponent(addBtn);
-		
+
 		// Selection click
 		onClick = _onClick;
 		// Context menu
@@ -67,6 +74,86 @@ class NodeView extends VBox {
 
 		addFieldButtons();
 		addComponent(fieldContainer);
+		populateData();
+	}
+
+	private function populateData() {
+		for (field in data.fields) {
+			var valueInput:Component;
+			var grid = new Grid();
+			grid.columns = 3; // Key input | Value input | Delete button
+			grid.percentWidth = 100;
+
+			var keyInput = new TextField();
+			keyInput.placeholder = "Key";
+			keyInput.percentWidth = 90;
+			keyInput.text = field.key;
+			keyInput.onChange = _ -> field.key = keyInput.text;
+
+			grid.addComponent(keyInput);
+
+			switch (field.type) {
+				default:
+					valueInput = null;
+				case "string", "number":
+					var ti = new TextField();
+					ti.percentWidth = 90;
+					ti.placeholder = "input value";
+					ti.text = field.value;
+					ti.onChange = _ -> field.value = ti.text;
+					valueInput = ti;
+
+				case "text":
+					var ta = new TextArea();
+					ta.percentWidth = 100;
+					ta.placeholder = "input value";
+					ta.height = 60;
+					ta.value = field.value;
+					ta.onChange = _ -> field.value = ta.text;
+					valueInput = ta;
+
+				case "boolean":
+					var cb = new CheckBox();
+					cb.value = field.value;
+					cb.onChange = _ -> field.value = cb.selected;
+					valueInput = cb;
+			}
+
+			if (valueInput != null)
+				grid.addComponent(valueInput);
+
+			// Delete button
+			var delBtn = new Button();
+			delBtn.text = "X";
+			delBtn.onClick = _ -> {
+				fieldContainer.removeComponent(grid);
+				// Remove port if applicable
+				if (field.portId != null) {
+					for (i in 0...data.fields.length) {
+						if (data.fields[i] == field) {
+							data.fields.splice(i, 1);
+							break;
+						}
+					}
+				}
+			}
+			grid.addComponent(delBtn);
+
+			if (field.type == 'data') {
+				var portData = {
+					id: field.portId,
+					name: field.key,
+					direction: PortDirection.Output,
+					isMain: false,
+				};
+
+				valueInput = null;
+				var pv = new PortView(this, portData);
+				grid.addComponent(pv);
+			}
+
+			fieldContainer.addComponent(grid);
+		}
 	}
 
 	private function addFieldButtons():Void {
@@ -102,7 +189,7 @@ class NodeView extends VBox {
 	}
 
 	private function addField(type:String):Void {
-		var rowData:Dynamic = {
+		var rowData:NodeField = {
 			type: type,
 			key: "",
 			value: null,
@@ -156,13 +243,10 @@ class NodeView extends VBox {
 		delBtn.text = "X";
 		delBtn.onClick = _ -> {
 			fieldContainer.removeComponent(grid);
-			// Remove port if applicable
-			if (rowData.portId != null) {
-				for (i in 0...data.ports.length) {
-					if (data.ports[i].id == rowData.portId) {
-						data.ports.splice(i, 1);
-						break;
-					}
+			for (i in 0...data.fields.length) {
+				if (data.fields[i] == rowData) {
+					data.fields.splice(i, 1);
+					break;
 				}
 			}
 		}
@@ -171,11 +255,11 @@ class NodeView extends VBox {
 		if (type == 'data') {
 			var portData = {
 				id: uuid(),
-				name: "ExtraField",
+				name: keyInput.text,
 				direction: PortDirection.Output,
 				isMain: false,
 			};
-			data.ports.push(portData);
+			// data.ports.push(portData);
 			rowData.portId = portData.id;
 
 			valueInput = null;
@@ -193,16 +277,17 @@ class NodeView extends VBox {
 	// -----------------------------------------------------------
 	// Ports / Connectors
 	// -----------------------------------------------------------
-	public function addPort(name:String, main:Bool, ?direction:PortDirection = PortDirection.Output) {
+	public function addPort(id:String, name:String, ?direction:PortDirection = PortDirection.Output) {
 		var portData = {
-			id: uuid(),
+			id: id,
 			name: name,
 			direction: direction,
-			isMain: main,
+			isMain: false,
 		};
-		data.ports.push(portData);
+		// data.ports.push(portData);
 		var pv = new PortView(this, portData);
 		addComponent(pv);
+		return pv;
 	}
 
 	public function hasPort(portId:String):Bool {
@@ -266,7 +351,7 @@ class NodeView extends VBox {
 	}
 
 	private function _onClick(_:haxe.ui.events.MouseEvent):Void {
-		if (!selected){
+		if (!selected) {
 			NodeCanvas.instance.selectNode(this);
 		} else {
 			NodeCanvas.instance.deselectNode(this);

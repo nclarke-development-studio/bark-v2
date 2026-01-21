@@ -1,7 +1,8 @@
 package ui;
 
-import util.SceneUtils;
-import ui.menus.Palette;
+import ui.toolbar.Toolbar;
+import util.WorkspaceUtils;
+import ui.palette.Palette;
 import data.WorkspaceData;
 import core.Workspace;
 import data.SceneData;
@@ -21,22 +22,23 @@ class EditorController {
 	public var history:History; // active scene history
 	public var canvas:NodeCanvas;
 	public var palette:Palette;
+	public var toolbar:Toolbar;
 	public var workspace:Workspace;
 
-	public function new(canvas:NodeCanvas, p:Palette) {
+	public function new(canvas:NodeCanvas, p:Palette, t:Toolbar) {
 		this.canvas = canvas;
 		canvas.controller = this;
 
 		this.palette = p;
 		palette.controller = this;
 
+		this.toolbar = t;
+		toolbar.controller = this;
+
 		graph = new Graph();
 		history = new History();
 
 		workspace = new Workspace('default');
-
-		createScene("default");
-		switchScene("default");
 	}
 
 	// ==========================================================
@@ -83,6 +85,8 @@ class EditorController {
 				isMain: p.isMain
 			};
 		});
+
+		// TODO: Deep copy fields
 
 		var copyData = {
 			id: GUID.uuid(),
@@ -159,75 +163,6 @@ class EditorController {
 	// SAVE / LOAD
 	// ==========================================================
 
-	public function saveScene(path:String = "graph.json") {
-		GraphSerializer.save(path, graph.data);
-	}
-
-	public function loadScene(path:String = "graph.json") {
-		graph.data = GraphSerializer.load(path);
-		history.clear();
-		canvas.rebuildUI();
-	}
-
-	public function createScene(id:String) {
-		var scene:SceneData = {
-			id: id,
-			graph: {
-				nodes: [],
-				connections: []
-			}
-		};
-		workspace.addScene(scene);
-		palette.rebuildScenes();
-	}
-
-	public function switchScene(id:String) {
-		var scene = workspace.scenes.get(id);
-		if (scene == null){
-			return;
-		}
-		
-		workspace.activeSceneId = id;
-		
-		graph = new Graph(scene.graph);
-		history = new History();
-		
-		palette.rebuildScenes();
-		canvas.rebuildUI();
-	}
-
-	function generateSceneCopyName(base:String):String {
-		var i = 1;
-		var name = base + "_copy";
-		while (workspace.scenes.exists(name)) {
-			name = base + "_copy" + i++;
-		}
-		return name;
-	}
-
-	public function duplicateScene():Void {
-		var srcId = workspace.activeSceneId;
-		var srcScene = workspace.scenes.get(srcId);
-
-		var newId = generateSceneCopyName(srcId);
-		var clonedGraph = SceneUtils.cloneGraph(srcScene.graph);
-
-		workspace.scenes.set(newId, {
-			id: newId,
-			graph: clonedGraph
-		});
-
-		palette.rebuildScenes();
-		switchScene(newId);
-	}
-
-	public function deleteScene(id:String) {
-		workspace.removeScene(id);
-		switchScene(workspace.activeSceneId);
-
-		palette.rebuildScenes();
-	}
-
 	public function newWorkspace(name:String) {
 		workspace = new Workspace(name);
 		createScene("default");
@@ -290,5 +225,109 @@ class EditorController {
 
 		palette.rebuildScenes();
 		return true;
+	}
+
+	public function saveScene(path:String = "graph.json") {
+		GraphSerializer.save(path, graph.data);
+	}
+
+	public function loadScene(path:String = "graph.json") {
+		graph.data = GraphSerializer.load(path);
+		history.clear();
+		canvas.rebuildUI();
+	}
+
+	public function createScene(id:String) {
+		var scene:SceneData = {
+			id: id,
+			graph: {
+				nodes: [],
+				connections: []
+			}
+		};
+		workspace.addScene(scene);
+		palette.rebuildScenes();
+	}
+
+	public function switchScene(id:String) {
+		var scene = workspace.scenes.get(id);
+		if (scene == null) {
+			return;
+		}
+
+		workspace.activeSceneId = id;
+
+		graph = new Graph(scene.graph);
+		history = new History();
+
+		palette.rebuildScenes();
+		canvas.rebuildUI();
+	}
+
+	function generateSceneCopyName(base:String):String {
+		var i = 1;
+		var name = base + "_copy";
+		while (workspace.scenes.exists(name)) {
+			name = base + "_copy" + i++;
+		}
+		return name;
+	}
+
+	public function duplicateScene():Void {
+		var srcId = workspace.activeSceneId;
+		var srcScene = workspace.scenes.get(srcId);
+
+		var newId = generateSceneCopyName(srcId);
+		var clonedGraph = WorkspaceUtils.cloneGraph(srcScene.graph);
+
+		workspace.scenes.set(newId, {
+			id: newId,
+			graph: clonedGraph
+		});
+
+		palette.rebuildScenes();
+		switchScene(newId);
+	}
+
+	public function deleteScene(id:String) {
+		workspace.removeScene(id);
+		switchScene(workspace.activeSceneId);
+
+		palette.rebuildScenes();
+	}
+
+	public function createSchema(name:String, nodes:Array<NodeData>, allConnections:Array<ConnectionData>) {
+		return WorkspaceUtils.encodeSchema(name, '', nodes, allConnections);
+	}
+
+	// TODO: actual clipboard paste
+	// Clipboard.setText(haxe.Json.stringify(schema));
+	// pasteSchema(Json.parse(Clipboard.getText()), mouseX, mouseY);
+	public function pasteSchema(schema:NodeGroupSchema, x:Float, y:Float) {
+		var decoded = WorkspaceUtils.decodeSchema(schema, x, y);
+		var nodes = decoded.nodes;
+		var connections = decoded.connections;
+
+		for (n in nodes)
+			history.execute(new AddNodeCommand(graph, n));
+		for (c in connections){
+			history.execute(new ConnectPortsCommand(graph, c));
+		}
+
+		canvas.rebuildUI();
+
+		// select the pasted nodes afterwards
+		canvas.clearSelection();
+		for (n in nodes) {
+			var view = canvas.getNodeView(n.id);
+			if (view != null) {
+				canvas.selectNode(view);
+			}
+		}
+	}
+
+	public function saveSelected(n:String) {
+		var nodeData = canvas.selectedNodes.map(node -> node.data);
+		return WorkspaceUtils.encodeSchema(n, '', nodeData, graph.data.connections);
 	}
 }

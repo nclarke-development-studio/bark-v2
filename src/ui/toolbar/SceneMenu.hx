@@ -1,4 +1,4 @@
-package ui.menus;
+package ui.toolbar;
 
 import haxe.ui.containers.dialogs.MessageBox.MessageBoxType;
 import ui.dialogs.NewSceneDialog;

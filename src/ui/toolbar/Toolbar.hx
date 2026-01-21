@@ -1,4 +1,4 @@
-package ui.menus;
+package ui.toolbar;
 
 import haxe.ui.containers.menus.Menu;
 import haxe.ui.containers.menus.MenuBar;
@@ -6,12 +6,16 @@ import haxe.ui.containers.menus.MenuItem;
 import haxe.ui.containers.dialogs.Dialogs;
 
 class Toolbar extends MenuBar {
-	public function new(editor:EditorController) {
+	public var controller:EditorController;
+
+	public function new() {
 		super();
 		percentWidth = 100;
+	}
 
-		addComponent(new WorkspaceMenu(editor));
-		addComponent(new SceneMenu(editor));
+	public function init() {
+		addComponent(new WorkspaceMenu(controller));
+		addComponent(new SceneMenu(controller));
 		addComponent(helpMenu());
 	}
 

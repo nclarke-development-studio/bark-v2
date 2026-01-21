@@ -1,5 +1,7 @@
 package ui.canvas;
 
+import ui.menus.SelectionRectContextMenu;
+import haxe.ui.events.MouseEvent;
 import haxe.ui.components.Canvas;
 import haxe.ui.geom.Point;
 import ui.nodes.NodeView;
@@ -19,7 +21,16 @@ class CanvasSelection {
 
 		selectionArea = new Canvas();
 		selectionArea.percentWidth = selectionArea.percentHeight = 100;
-		selectionArea.mouseEnabled = false;
+		// selectionArea.mouseEnabled = false;
+
+		selectionArea.onRightClick = function(e:MouseEvent) {
+			e.cancel();
+
+			var menu = new SelectionRectContextMenu(canvas, canvas.controller);
+			menu.left = e.screenX;
+			menu.top = e.screenY;
+			menu.show();
+		}
 	}
 
 	public function beginSelection(x:Float, y:Float) {
@@ -27,8 +38,11 @@ class CanvasSelection {
 		start = new Point(x, y);
 		end = new Point(x, y);
 
-		if (!canvas.containsComponent(selectionArea)) {
-			canvas.addComponent(selectionArea);
+		var g = selectionArea.componentGraphics;
+		g.clear();
+
+		if (!canvas.contentLayer.containsComponent(selectionArea)) {
+			canvas.contentLayer.addComponent(selectionArea);
 		}
 	}
 
@@ -46,12 +60,9 @@ class CanvasSelection {
 		end = null;
 		start = null;
 
-		if (canvas.containsComponent(selectionArea)) {
-			canvas.removeComponent(selectionArea);
+		if (canvas.selectedNodes.length == 0 && canvas.contentLayer.containsComponent(selectionArea)) {
+			canvas.contentLayer.removeComponent(selectionArea);
 		}
-
-		var g = selectionArea.componentGraphics;
-		g.clear();
 	}
 
 	// function updateHits(x1:Float, y1:Float, x2:Float, y2:Float) {
@@ -85,14 +96,14 @@ class CanvasSelection {
 		var ex = Math.max(x1, x2);
 		var ey = Math.max(y1, y2);
 
-		var invScale = 1.0 / canvas.contentLayer.scaleX;
-		var offsetX = -canvas.contentLayer.left;
-		var offsetY = -canvas.contentLayer.top;
+		// var invScale = 1.0 / canvas.contentLayer.scaleX;
+		// var offsetX = -canvas.contentLayer.left;
+		// var offsetY = -canvas.contentLayer.top;
 
-		sx = (sx + offsetX) * invScale;
-		sy = (sy + offsetY) * invScale;
-		ex = (ex + offsetX) * invScale;
-		ey = (ey + offsetY) * invScale;
+		// sx = (sx + offsetX) * invScale;
+		// sy = (sy + offsetY) * invScale;
+		// ex = (ex + offsetX) * invScale;
+		// ey = (ey + offsetY) * invScale;
 
 		for (n in canvas.nodes) {
 			var fullyInside = n.left >= sx && n.top >= sy && (n.left + n.width) <= ex && (n.top + n.height) <= ey;

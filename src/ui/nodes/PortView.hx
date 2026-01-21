@@ -29,10 +29,10 @@ class PortView extends HBox {
 		// percentWidth = 100;
 
 		// optional: horizontal layout, icon + label
-		var label = new Label();
-		label.text = data.name;
-		label.addClass("port-label");
-		addComponent(label);
+		// var label = new Label();
+		// label.text = data.name;
+		// label.addClass("port-label");
+		// addComponent(label);
 
 		// Optional: small button for adding connections interactively
 		connectBtn = new Button();

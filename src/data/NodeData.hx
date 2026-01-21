@@ -15,3 +15,32 @@ typedef NodeData = {
 	var ports:Array<PortData>;
 	var fields:Array<NodeField>;
 }
+
+typedef SchemaField = {
+	var key:String;
+	var type:String; // "string" | "text" | "data"
+	var value:Dynamic;
+}
+
+typedef SchemaNode = {
+	var name:String;
+	var type:String; // "base", "source", etc
+	var color:String;
+	var position:Array<Float>; // [x, y]
+	var ?fields:Array<SchemaField>;
+	var ?ports:Array<PortData>;
+}
+
+typedef SchemaEdge = {
+	var fromHandle:String;
+	var toHandle:String;
+	var from:Int;
+	var to:Int;
+}
+
+typedef NodeGroupSchema = {
+	var name:String;
+	var color:String;
+	var nodes:Array<SchemaNode>;
+	var edges:Array<SchemaEdge>;
+}

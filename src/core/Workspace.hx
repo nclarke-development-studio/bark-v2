@@ -1,11 +1,13 @@
 package core;
 
+import data.NodeData.NodeGroupSchema;
 import data.SceneData;
 
 class Workspace {
     public var name:String;
     public var scenes:Map<String, SceneData> = [];
     public var activeSceneId:String;
+	public var schemas:Array<NodeGroupSchema> = [];
 
     public function new(?n:String) {
         name = n;

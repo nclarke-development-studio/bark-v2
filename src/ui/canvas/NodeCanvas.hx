@@ -1,5 +1,6 @@
 package ui.canvas;
 
+import util.ArrayUtils;
 import openfl.geom.Point;
 import util.ConnectionHelpers;
 import haxe.ui.geom.Rectangle;
@@ -122,21 +123,19 @@ class NodeCanvas extends Absolute {
 		});
 	}
 
-	// mouse utils
-
 	@:bind(this, MouseEvent.MOUSE_DOWN)
 	function onMouseDown(e:MouseEvent) {
 		if (hitEmptySpace(e)) {
 			clearSelection();
 		}
-		var localPos = globalToLocal(new Point(e.screenX, e.screenY));
+		var localPos = contentLayer.globalToLocal(new Point(e.screenX, e.screenY));
 		selection.beginSelection(localPos.x, localPos.y);
 	}
 
 	@:bind(this, MouseEvent.MOUSE_MOVE)
 	function onMouseMove(e:MouseEvent) {
 		if (selection.selecting) {
-			var localPos = globalToLocal(new Point(e.screenX, e.screenY));
+			var localPos = contentLayer.globalToLocal(new Point(e.screenX, e.screenY));
 			selection.update(localPos.x, localPos.y);
 		}
 		if (connectionPreview.isPreviewing()) {
@@ -148,6 +147,10 @@ class NodeCanvas extends Absolute {
 	function onMouseUp(e) {
 		selection.endSelection();
 		cancelPreview();
+	}
+
+	public function getNodeView(id:String) {
+		return ArrayUtils.find(nodes, p -> p.data.id == id);
 	}
 
 	public function selectNode(n:NodeView) {

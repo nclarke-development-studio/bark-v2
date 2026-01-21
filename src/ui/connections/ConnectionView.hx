@@ -48,7 +48,7 @@ class ConnectionView extends Canvas {
 
 	// Unique key for lookup in canvas maps
 	public function dataKey():String {
-		return data.fromPort + "->" + data.toPort;
+		return data.id;
 	}
 
 	/**

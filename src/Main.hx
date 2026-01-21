@@ -1,7 +1,9 @@
 package;
 
-import ui.menus.Toolbar;
-import ui.menus.Palette;
+import data.PortData.PortDirection;
+import haxe.ui.util.GUID;
+import ui.toolbar.Toolbar;
+import ui.palette.Palette;
 import haxe.ui.containers.VBox;
 import haxe.ui.containers.HBox;
 import haxe.ui.Toolkit;
@@ -25,9 +27,14 @@ class Main {
 
 				var canvas = new NodeCanvas();
 				var palette = new Palette();
-				var editor = new EditorController(canvas, palette);
+				var toolbar = new Toolbar();
+				var editor = new EditorController(canvas, palette, toolbar);
 
-				var toolbar = new Toolbar(editor);
+				// canvas.init();
+				palette.init();
+				toolbar.init();
+
+				editor.newWorkspace('default');
 
 				root.addComponent(toolbar);
 
@@ -36,17 +43,21 @@ class Main {
 				mainHBox.percentHeight = 100;
 				mainHBox.horizontalSpacing = 0;
 
-
-
 				editor.addNode({
 					id: "root",
 					type: 'node',
 					x: 50,
 					y: 50,
-					ports: [],
+					ports: [
+						{
+							id: GUID.uuid(),
+							name: 'mainSource',
+							direction: PortDirection.Output,
+							isMain: false
+						}
+					],
 					fields: [],
 				});
-
 
 				mainHBox.addComponent(palette);
 				mainHBox.addComponent(canvas);

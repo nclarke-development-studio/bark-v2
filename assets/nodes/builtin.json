@@ -1,0 +1,206 @@
+{
+  "nodes": [
+    {
+      "name": "basic",
+      "color": "#c4cf11",
+      "nodes": [
+        {
+          "name": "basic",
+          "type": "base",
+          "color": "#6e78ff",
+          "position": [0, 0],
+          "ports": [
+            {
+              "name": "mainSource",
+              "isMain": true,
+              "direction": "output"
+            },
+            {
+              "name": "mainTarget",
+              "isMain": true,
+              "direction": "input"
+            }
+          ],
+          "fields": []
+        }
+      ],
+      "edges": []
+    },
+
+    {
+      "name": "dialogue",
+      "color": "#c4cf11",
+      "nodes": [
+        {
+          "name": "dialogue",
+          "type": "base",
+          "color": "#6e78ff",
+          "position": [0, 0],
+          "ports": [
+            {
+              "name": "mainSource",
+              "isMain": true,
+              "direction": "output"
+            },
+            {
+              "name": "mainTarget",
+              "isMain": true,
+              "direction": "input"
+            }
+          ],
+          "fields": [
+            {
+              "key": "characterName",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "key": "dialogue",
+              "type": "text",
+              "value": ""
+            }
+          ]
+        }
+      ],
+      "edges": []
+    },
+    {
+      "name": "source",
+      "color": "#c4cf11",
+      "nodes": [
+        {
+          "name": "source",
+          "type": "source",
+          "color": "#6e78ff",
+          "position": [0, 0],
+          "ports": [
+            {
+              "name": "mainSource",
+              "isMain": true,
+              "direction": "output"
+            }
+          ],
+          "fields": []
+        }
+      ],
+      "edges": []
+    },
+    {
+      "name": "sink",
+      "color": "#c4cf11",
+      "nodes": [
+        {
+          "name": "source",
+          "type": "source",
+          "color": "#6e78ff",
+          "position": [0, 0],
+          "ports": [
+            {
+              "name": "mainTarget",
+              "isMain": true,
+              "direction": "input"
+            }
+          ],
+          "fields": []
+        }
+      ],
+      "edges": []
+    },
+    {
+      "name": "branch",
+      "color": "#c4cf11",
+      "nodes": [
+        {
+          "name": "Branch",
+          "type": "base",
+          "color": "#6e78ff",
+          "position": [0, 0],
+          "ports": [
+            {
+              "name": "mainSource",
+              "isMain": true,
+              "direction": "output"
+            },
+            {
+              "name": "mainTarget",
+              "isMain": true,
+              "direction": "input"
+            }
+          ],
+          "fields": [
+            {
+              "key": "characterName",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "key": "dialogue",
+              "type": "text",
+              "value": ""
+            },
+            {
+              "key": "Yes",
+              "type": "data",
+              "value": "Yes"
+            },
+            {
+              "key": "No",
+              "type": "data",
+              "value": "No"
+            }
+          ]
+        },
+        {
+          "name": "Yes",
+          "type": "base",
+          "color": "#c4cf11",
+          "position": [550, -150],
+          "ports": [
+            {
+              "name": "mainSource",
+              "isMain": true,
+              "direction": "output"
+            },
+            {
+              "name": "mainTarget",
+              "isMain": true,
+              "direction": "input"
+            }
+          ]
+        },
+        {
+          "name": "No",
+          "type": "base",
+          "color": "#ff4c4d",
+          "position": [550, 150],
+          "ports": [
+            {
+              "name": "mainSource",
+              "isMain": true,
+              "direction": "output"
+            },
+            {
+              "name": "mainTarget",
+              "isMain": true,
+              "direction": "input"
+            }
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "fromHandle": "Yes",
+          "from": 0,
+          "to": 1,
+          "toHandle": "mainTarget"
+        },
+        {
+          "fromHandle": "No",
+          "from": 0,
+          "to": 2,
+          "toHandle": "mainTarget"
+        }
+      ]
+    }
+  ]
+}

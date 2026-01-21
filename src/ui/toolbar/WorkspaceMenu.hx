@@ -1,4 +1,4 @@
-package ui.menus;
+package ui.toolbar;
 
 import ui.dialogs.NewWorkspaceDialog;
 import haxe.ui.containers.dialogs.Dialog.DialogButton;
