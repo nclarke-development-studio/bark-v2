@@ -1,21 +1,53 @@
 package ui.toolbar;
 
+import core.Workspace;
+import data.SceneData;
 import haxe.ui.containers.menus.Menu;
 import haxe.ui.containers.menus.MenuBar;
 import haxe.ui.containers.menus.MenuItem;
 import haxe.ui.containers.dialogs.Dialogs;
 
 class Toolbar extends MenuBar {
-	public var controller:EditorController;
+	public var onRequestCreateScene:(String) -> Void;
+	public var onRequestSwitchScene:(String) -> Void;
+	public var onRequestDuplicateScene:(String) -> Void;
+	public var onRequestDeleteScene:(String) -> Void;
+
+	public var onRequestGetActiveScene:() -> SceneData;
+	public var onRequestGetWorkspaceScenes:() -> Array<SceneData>;
+	public var onRequestRenameScene:(String, String) -> Void;
+
+	public var onRequestCreateWorkspace:(String) -> Void;
+	public var onRequestGetWorkspaceName:() -> String;
+	public var onRequestRenameWorkspace:(String) -> Void;
+
+	var workspaceM:WorkspaceMenu;
+	var sceneM:SceneMenu;
 
 	public function new() {
 		super();
 		percentWidth = 100;
+
+		workspaceM = new WorkspaceMenu();
+		sceneM = new SceneMenu();
 	}
 
 	public function init() {
-		addComponent(new WorkspaceMenu(controller));
-		addComponent(new SceneMenu(controller));
+		sceneM.onRequestCreateScene = onRequestCreateScene;
+		sceneM.onRequestSwitchScene = onRequestSwitchScene;
+		sceneM.onRequestDuplicateScene = onRequestDuplicateScene;
+		sceneM.onRequestDeleteScene = onRequestDeleteScene;
+
+		sceneM.onRequestGetActiveScene = onRequestGetActiveScene;
+		sceneM.onRequestGetWorkspaceScenes = onRequestGetWorkspaceScenes;
+		sceneM.onRequestRenameScene = onRequestRenameScene;
+
+		workspaceM.onRequestCreateWorkspace = onRequestCreateWorkspace;
+		workspaceM.onRequestGetWorkspaceName = onRequestGetWorkspaceName;
+		workspaceM.onRequestRenameWorkspace = onRequestRenameWorkspace;
+
+		addComponent(workspaceM);
+		addComponent(sceneM);
 		addComponent(helpMenu());
 	}
 
@@ -34,5 +66,10 @@ class Toolbar extends MenuBar {
 		menu.addComponent(usage);
 		menu.addComponent(about);
 		return menu;
+	}
+
+	public function rebuild(workspace:Workspace) {
+		// workspaceMenu.rebuild(workspace);
+		sceneM.rebuild(workspace);
 	}
 }

@@ -1,15 +1,13 @@
 package ui.palette;
 
+import core.Workspace;
 import haxe.Resource;
 import haxe.Json;
-import openfl.geom.Point;
-import ui.canvas.NodeCanvas;
 import data.NodeData;
 import haxe.ui.containers.VBox;
 import haxe.ui.containers.Collapsible;
 import haxe.ui.components.Button;
 import haxe.ui.events.MouseEvent;
-import haxe.ui.util.GUID;
 #if !js
 import sys.io.File;
 #end
@@ -21,31 +19,35 @@ import js.node.Fs;
 #end
 
 class NodePalette extends VBox {
-	public var controller:EditorController;
-
 	var dragGhost:Button = null;
-	var builtInSchemas:Array<NodeGroupSchema> = [];
-	var workspaceSchemas:Array<NodeGroupSchema> = [];
+	var showCreateNodeButton:Bool;
 
-	public function new(controller:EditorController) {
+	public var onNodeDrop:(nodeGroup:NodeGroupSchema, x:Float, y:Float) -> Void;
+
+	var builtInSchemas:Array<NodeGroupSchema> = [];
+
+	// var workspaceSchemas:Array<NodeGroupSchema> = [];
+
+	public function new(show:Bool = true) {
 		super();
-		this.controller = controller;
+
+		showCreateNodeButton = show;
 
 		text = "Nodes";
 		percentHeight = 100;
 
 		loadSchemas();
-		rebuild();
 	}
 
 	function loadSchemas():Void {
 		var raw = Resource.getString("nodes/builtin.json");
 		var parsed = Json.parse(raw);
-		workspaceSchemas = controller.workspace.schemas;
 		builtInSchemas = parsed.nodes;
+
+		trace('loaded builtin schemas');
 	}
 
-	public function rebuild():Void {
+	public function rebuild(workspace:Workspace):Void {
 		removeAllComponents();
 
 		var builtInContainer = new Collapsible();
@@ -66,13 +68,22 @@ class NodePalette extends VBox {
 		var customContainer = new Collapsible();
 		customContainer.text = "Workspace Nodes";
 		customContainer.width = 200;
-		for (schema in workspaceSchemas) {
+		for (schema in workspace.schemas) {
 			var btn = new Button();
 			btn.text = schema.name;
 			btn.percentWidth = 100;
 
 			makeDraggable(btn, schema);
 			customContainer.addComponent(btn);
+		}
+		if (showCreateNodeButton) {
+			var addBtn = new Button();
+			addBtn.text = "+ Create Node";
+			addBtn.onClick = _ -> {
+				var dialog = new SchemaEditor(null, workspace);
+				dialog.showDialog();
+			};
+			customContainer.addComponent(addBtn);
 		}
 		addComponent(customContainer);
 	}
@@ -97,9 +108,9 @@ class NodePalette extends VBox {
 			var mouseUpFn:Dynamic = null;
 			mouseUpFn = function(e:MouseEvent) {
 				if (dragGhost != null) {
-					var dropPosition = NodeCanvas.instance.contentLayer.globalToLocal(new openfl.geom.Point(e.screenX, e.screenY));
-
-					controller.pasteSchema(schema, dropPosition.x, dropPosition.y);
+					if (onNodeDrop != null) {
+						onNodeDrop(schema, e.screenX, e.screenY);
+					}
 
 					dragGhost.hide();
 					dragGhost = null;

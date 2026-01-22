@@ -1,13 +1,10 @@
 package ui.canvas;
 
-import data.PortData;
-import data.NodeData;
-import data.ConnectionData;
-import core.Graph;
 import util.ArrayUtils;
 import openfl.geom.Point;
 import util.ConnectionHelpers;
 import haxe.ui.geom.Rectangle;
+import ui.menus.GraphContextMenu;
 import haxe.ui.containers.Absolute;
 import haxe.ui.events.MouseEvent;
 import ui.nodes.NodeView;
@@ -21,6 +18,8 @@ import ui.connections.ConnectionView;
 		└── contentLayer (world + nodes + connections) can grow arbitrarily large
  */
 class NodeCanvas extends Absolute {
+	public static var instance:NodeCanvas;
+
 	// ========================
 	// graph visuals
 	public var nodes:Array<NodeView> = [];
@@ -44,21 +43,17 @@ class NodeCanvas extends Absolute {
 
 	public var contentBounds:Rectangle;
 
+	public var controller:EditorController;
+
 	// canvas helpers
 	public var panZoom:CanvasPanZoom;
 	public var selection:CanvasSelection;
 	public var connectionPreview:CanvasConnectionPreview;
 	public var graphSync:CanvasGraphSync;
 
-	// callbacks
-	public var onRequestCanvasContextMenu:(NodeCanvas, MouseEvent) -> Void;
-	public var onRequestNodeContextMenu:(NodeView, MouseEvent) -> Void;
-	public var onRequestSelectionContextMenu:(NodeCanvas, MouseEvent) -> Void;
-	public var onRemoveConnection:(ConnectionData) -> Void;
-	public var connectPorts:(NodeData, PortData, NodeData, PortData) -> ConnectionData;
-
 	public function new() {
 		super();
+		instance = this;
 
 		percentWidth = 100;
 		percentHeight = 100;
@@ -102,9 +97,6 @@ class NodeCanvas extends Absolute {
 		// canvas helpers
 		panZoom = new CanvasPanZoom(this);
 		selection = new CanvasSelection(this);
-		if (onRequestSelectionContextMenu != null)
-			selection.onRequestContextMenu = onRequestSelectionContextMenu;
-
 		connectionPreview = new CanvasConnectionPreview(this);
 		graphSync = new CanvasGraphSync(this);
 
@@ -122,8 +114,11 @@ class NodeCanvas extends Absolute {
 
 	function registerMouseEvents() {
 		registerEvent(MouseEvent.RIGHT_CLICK, e -> {
-			if (onRequestCanvasContextMenu != null) {
-				onRequestCanvasContextMenu(this, e);
+			if (controller != null) {
+				var menu = new GraphContextMenu(this, controller);
+				menu.left = e.screenX;
+				menu.top = e.screenY;
+				menu.show();
 			}
 		});
 	}
@@ -198,17 +193,17 @@ class NodeCanvas extends Absolute {
 	public function refreshConnections(node:NodeView = null) {
 		if (node == null) {
 			for (c in connections)
-				c.updateBezier(this);
+				c.updateBezier();
 		} else {
 			for (c in ConnectionHelpers.getEdgesInto(node, edgesIntoMap))
-				c.updateBezier(this);
+				c.updateBezier();
 			for (c in ConnectionHelpers.getEdgesOut(node, edgesOutMap))
-				c.updateBezier(this);
+				c.updateBezier();
 		}
 	}
 
-	public function rebuild(g:Graph) {
-		graphSync.rebuild(g);
+	public function rebuildUI() {
+		graphSync.rebuildUI();
 	}
 
 	function hitEmptySpace(e:MouseEvent):Bool {

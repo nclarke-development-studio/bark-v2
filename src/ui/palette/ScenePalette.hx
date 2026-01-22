@@ -1,38 +1,39 @@
 package ui.palette;
 
+import core.Workspace;
 import ui.dialogs.NewSceneDialog;
 import haxe.ui.containers.VBox;
 import haxe.ui.components.Button;
 
 class ScenePalette extends VBox {
-	public var controller:EditorController;
+	public var onSceneSelect:(id:String) -> Void;
+	public var onSceneCreate:(id:String) -> Void;
 
-	public function new(controller:EditorController) {
+	public function new() {
 		super();
-		this.controller = controller;
 
 		text = "Scenes";
 		percentHeight = 100;
 		verticalSpacing = 4;
-
-		rebuild();
 	}
 
-	public function rebuild():Void {
+	public function rebuild(workspace:Workspace):Void {
 		removeAllComponents();
 
-		for (sceneId in controller.workspace.scenes.keys()) {
+		for (scene in workspace.scenes) {
 			var btn = new Button();
-			btn.text = sceneId;
+			btn.text = scene.id;
 			btn.percentWidth = 100;
 
-			if (sceneId == controller.workspace.activeSceneId) {
+			if (scene.id == workspace.activeSceneId) {
 				btn.addClass("active-scene");
 			}
 
 			btn.onClick = _ -> {
-				controller.switchScene(sceneId);
-				rebuild();
+				// switchScene(sceneId);
+				// rebuild();
+				if (onSceneSelect != null)
+					onSceneSelect(scene.id);
 			};
 
 			addComponent(btn);
@@ -43,9 +44,15 @@ class ScenePalette extends VBox {
 		addBtn.onClick = _ -> {
 			var dialog = new NewSceneDialog();
 			dialog.onConfirm = name -> {
-				controller.createScene(name);
-				controller.switchScene(name);
-				rebuild();
+				// controller.createScene(name);
+				// controller.switchScene(name);
+				// rebuild();
+
+				if (onSceneCreate != null)
+					onSceneCreate(name);
+
+				if (onSceneSelect != null)
+					onSceneSelect(name);
 			};
 			dialog.showDialog();
 		};

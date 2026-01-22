@@ -1,6 +1,5 @@
 package ui.nodes;
 
-import ui.canvas.NodeCanvas;
 import haxe.ui.containers.Grid;
 import haxe.ui.components.TextArea;
 import haxe.ui.components.TextField;
@@ -8,7 +7,6 @@ import haxe.ui.components.CheckBox;
 import haxe.ui.core.Component;
 import haxe.ui.containers.HBox;
 import data.ConnectionData;
-import ui.menus.NodeContextMenu;
 import data.PortData.PortDirection;
 import openfl.geom.Point;
 import haxe.ui.containers.VBox;
@@ -19,9 +17,18 @@ import haxe.ui.util.GUID.uuid;
 import ui.nodes.PortView;
 import data.NodeData;
 
+// to help with null functions on create
+interface NodeViewActions {
+	function requestContextMenu(node:NodeView, e:MouseEvent):Void;
+	function nodeClicked(node:NodeView):Void;
+	function removeConnection(c:ConnectionData):Void;
+
+	function connectionStart(p:PortView, e:MouseEvent):Void;
+	function connectionFinish(p:PortView, e:MouseEvent):String;
+}
+
 class NodeView extends VBox {
 	public var selected:Bool = false;
-	public var controller:EditorController;
 	public var data:NodeData;
 	public var outgoingConnections:Array<PortView> = [];
 	public var incomingConnections:Array<PortView> = [];
@@ -31,10 +38,18 @@ class NodeView extends VBox {
 
 	public var fieldContainer:VBox;
 
-	public function new(data:NodeData, c:EditorController) {
+	// callbacks
+	public var onRequestContextMenu:(n:NodeView, e:MouseEvent) -> Void;
+	public var onRemoveConnection:(c:ConnectionData) -> Void;
+	public var onNodeClicked:(n:NodeView) -> Void;
+
+	// portview callbacks
+	public var onConnectionStart:(PortView, MouseEvent) -> Void;
+	public var onConnectionFinish:(PortView, MouseEvent) -> String;
+
+	public function new(data:NodeData) {
 		super();
 		this.data = data;
-		this.controller = c;
 		addClass("node");
 		padding = 8;
 		width = 320;
@@ -45,8 +60,10 @@ class NodeView extends VBox {
 		header.text = data.type;
 		header.addClass("node-header");
 		addComponent(header);
+	}
 
-		for (port in data.ports){
+	public function init() {
+		for (port in data.ports) {
 			addPort(port.id, port.name, port.direction);
 		}
 
@@ -63,10 +80,12 @@ class NodeView extends VBox {
 		// Context menu
 		registerEvent(MouseEvent.RIGHT_CLICK, e -> {
 			e.cancel();
-			var menu = new NodeContextMenu(this, controller);
-			menu.left = e.screenX;
-			menu.top = e.screenY;
-			menu.show();
+			if (onRequestContextMenu != null)
+				onRequestContextMenu(this, e);
+			// var menu = new NodeContextMenu(this, controller);
+			// menu.left = e.screenX;
+			// menu.top = e.screenY;
+			// menu.show();
 		});
 
 		fieldContainer = new VBox();
@@ -127,13 +146,14 @@ class NodeView extends VBox {
 			delBtn.text = "X";
 			delBtn.onClick = _ -> {
 				fieldContainer.removeComponent(grid);
-				// Remove port if applicable
-				if (field.portId != null) {
-					for (i in 0...data.fields.length) {
-						if (data.fields[i] == field) {
-							data.fields.splice(i, 1);
-							break;
-						}
+				for (i in 0...data.fields.length) {
+					// Remove port if applicable
+					// if (field.portId != null) {
+					// 	removeConnection()
+					// }
+					if (data.fields[i] == field) {
+						data.fields.splice(i, 1);
+						break;
 					}
 				}
 			}
@@ -148,7 +168,7 @@ class NodeView extends VBox {
 				};
 
 				valueInput = null;
-				var pv = new PortView(this, portData);
+				var pv = new PortView(this, portData, null, onConnectionStart, onConnectionFinish);
 				grid.addComponent(pv);
 			}
 
@@ -263,7 +283,7 @@ class NodeView extends VBox {
 			rowData.portId = portData.id;
 
 			valueInput = null;
-			var pv = new PortView(this, portData);
+			var pv = new PortView(this, portData, null, onConnectionStart, onConnectionFinish);
 			grid.addComponent(pv);
 		}
 
@@ -285,7 +305,7 @@ class NodeView extends VBox {
 			isMain: false,
 		};
 		// data.ports.push(portData);
-		var pv = new PortView(this, portData);
+		var pv = new PortView(this, portData, null, onConnectionStart, onConnectionFinish);
 		addComponent(pv);
 		return pv;
 	}
@@ -295,7 +315,8 @@ class NodeView extends VBox {
 	}
 
 	public function removeConnection(c:ConnectionData) {
-		controller.removeConnection(c);
+		if (onRemoveConnection != null)
+			onRemoveConnection(c);
 	}
 
 	public function getPortView(portId:String):PortView {
@@ -351,10 +372,12 @@ class NodeView extends VBox {
 	}
 
 	private function _onClick(_:haxe.ui.events.MouseEvent):Void {
-		if (!selected) {
-			NodeCanvas.instance.selectNode(this);
-		} else {
-			NodeCanvas.instance.deselectNode(this);
-		}
+		// if (!selected) {
+		// 	NodeCanvas.instance.selectNode(this);
+		// } else {
+		// 	NodeCanvas.instance.deselectNode(this);
+		// }
+		if (onNodeClicked != null)
+			onNodeClicked(this);
 	}
 }

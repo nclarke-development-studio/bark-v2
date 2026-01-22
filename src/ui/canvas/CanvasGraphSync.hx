@@ -1,5 +1,6 @@
 package ui.canvas;
 
+import core.Graph;
 import haxe.ds.StringMap;
 import ui.nodes.NodeView;
 import ui.connections.ConnectionView;
@@ -15,9 +16,9 @@ class CanvasGraphSync {
 	/**
 	 * Synchronize node views with the graph data
 	 */
-	public function syncNodes():Void {
+	public function syncNodes(g:Graph):Void {
 		var dataNodeMap = new StringMap<Bool>();
-		for (nd in canvas.controller.graph.data.nodes) {
+		for (nd in g.data.nodes) {
 			dataNodeMap.set(nd.id, true);
 		}
 
@@ -38,11 +39,41 @@ class CanvasGraphSync {
 			viewMap.set(nv.data.id, nv);
 
 		// Update or create nodeViews
-		for (nodeData in canvas.controller.graph.data.nodes) {
+		for (nodeData in g.data.nodes) {
 			var nv = viewMap.exists(nodeData.id) ? viewMap.get(nodeData.id) : null;
 
 			if (nv == null) {
-				nv = new NodeView(nodeData, canvas.controller);
+				nv = new NodeView(nodeData);
+
+				nv.onNodeClicked = (n) -> {
+					if (n.selected)
+						canvas.selectNode(n);
+					else
+						canvas.deselectNode(n);
+				}
+
+				nv.onRequestContextMenu = (n, e) -> {
+					if (canvas.onRequestNodeContextMenu != null) {
+						canvas.onRequestNodeContextMenu(n, e);
+					}
+				}
+
+				nv.onRemoveConnection = (c) -> {
+					if (canvas.onRemoveConnection != null) {
+						canvas.onRemoveConnection(c);
+					}
+				}
+
+				nv.onConnectionStart = (pv, e) -> {
+					canvas.beginConnection(pv, e);
+				}
+
+				nv.onConnectionFinish = (pv, e) -> {
+					return canvas.finishConnection(pv);
+				}
+
+				// TODO: really don't like this
+				nv.init();
 
 				// make draggable with scale-aware bounds
 				util.DragUtil.makeScaleAwareDraggable(nv, () -> canvas.zoom, canvas.contentBounds, function(x, y) {
@@ -62,7 +93,7 @@ class CanvasGraphSync {
 		}
 	}
 
-	public function syncConnections():Void {
+	public function syncConnections(g:Graph):Void {
 		canvas.edgesIntoMap = new Map();
 		canvas.edgesOutMap = new Map();
 
@@ -73,7 +104,7 @@ class CanvasGraphSync {
 
 		var validIds = new StringMap<Bool>();
 
-		for (connData in canvas.controller.graph.data.connections) {
+		for (connData in g.data.connections) {
 			var id = connData.id;
 			validIds.set(id, true);
 
@@ -118,7 +149,7 @@ class CanvasGraphSync {
 	/**
 	 * Remove invalid nodes from the selection list
 	 */
-	public function cleanupSelection():Void {
+	public function cleanupSelection(g:Graph):Void {
 		var validNodeIds = new StringMap<Bool>();
 		for (n in canvas.nodes)
 			validNodeIds.set(n.data.id, true);
@@ -137,10 +168,10 @@ class CanvasGraphSync {
 	/**
 	 * Rebuild the UI incrementally (nodes + connections + selection)
 	 */
-	public function rebuildUI():Void {
-		syncNodes();
-		syncConnections();
-		cleanupSelection();
+	public function rebuild(g:Graph):Void {
+		syncNodes(g);
+		syncConnections(g);
+		cleanupSelection(g);
 		canvas.updateContentBounds();
 	}
 }

@@ -42,7 +42,7 @@ class CanvasConnectionPreview {
 		if (pendingPort == null || to == pendingPort)
 			return '';
 
-		var connectionId = canvas.controller.connectPorts(pendingPort.node.data, pendingPort.data, to.node.data, to.data).connection.id;
+		var connectionId = canvas.connectPorts(pendingPort.node.data, pendingPort.data, to.node.data, to.data).id;
 		cancelPreview();
 		return connectionId;
 	}

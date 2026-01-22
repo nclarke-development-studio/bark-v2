@@ -1,30 +1,33 @@
 package ui.menus;
 
+import util.WorkspaceUtils;
+import core.Workspace;
+import core.EditorSession;
 import ui.nodes.NodeView;
 import haxe.ui.containers.menus.Menu;
 import haxe.ui.containers.menus.MenuItem;
 
 class NodeContextMenu extends Menu {
-	public function new(node:NodeView, controller:EditorController) {
+	public function new(node:NodeView, session:EditorSession) {
 		super();
 
 		// TODO: open schema name menu
 		var saveItem = new MenuItem();
 		saveItem.text = "Save Node";
 		saveItem.onClick = _ -> {
-			controller.createSchema(node.data.id, [node.data], controller.graph.data.connections);
+			session.addNodeToWorkspace(WorkspaceUtils.encodeSchema('test', '', [node.data], session.graph.data.connections));
 		};
 
 		var duplicateItem = new MenuItem();
 		duplicateItem.text = "Duplicate Node";
 		duplicateItem.onClick = _ -> {
-			controller.duplicateNode(node);
+			session.duplicateNode(node.data);
 		};
 
 		var deleteItem = new MenuItem();
 		deleteItem.text = "Delete Node";
 		deleteItem.onClick = _ -> {
-			controller.deleteNode(node);
+			session.removeNode(node.data.id);
 		};
 
 		addComponent(saveItem);

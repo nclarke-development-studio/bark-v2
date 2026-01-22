@@ -54,15 +54,15 @@ class ConnectionView extends Canvas {
 	/**
 	 * Recompute control points and redraw the Bezier only if changed.
 	 */
-	public function updateBezier():Void {
-		redraw();
+	public function updateBezier(c:NodeCanvas):Void {
+		redraw(c);
 	}
 
-	private function redraw():Void {
+	private function redraw(c:NodeCanvas):Void {
 		graphics.clear();
 
-		var fromPos = NodeCanvas.instance.contentLayer.globalToLocal(fromNode.getPortPosition(data.fromPort));
-		var toPos = NodeCanvas.instance.contentLayer.globalToLocal(toNode.getPortPosition(data.toPort));
+		var fromPos = c.contentLayer.globalToLocal(fromNode.getPortPosition(data.fromPort));
+		var toPos = c.contentLayer.globalToLocal(toNode.getPortPosition(data.toPort));
 
 		// Convert contentLayer/world coordinates into local Canvas space
 		// var invScale = 1.0 / parent.parent.scaleX; // assume uniform scaleX=scaleY

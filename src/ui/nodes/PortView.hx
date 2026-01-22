@@ -19,11 +19,18 @@ class PortView extends HBox {
 	private var connectBtn:Button;
 	private var onDragEnd:(id:String) -> Void;
 
-	public function new(node:NodeView, data:PortData, ?onDragEnd:(id:String) -> Void) {
+	public var onConnectionStart:(PortView, MouseEvent) -> Void;
+	public var onConnectionFinish:(PortView, MouseEvent) -> String;
+
+	public function new(node:NodeView, data:PortData, ?onDragEnd:(id:String) -> Void, ?oCS:(PortView, MouseEvent) -> Void,
+			oCF:(PortView, MouseEvent) -> String) {
 		super();
 		this.node = node;
 		this.data = data;
+
 		this.onDragEnd = onDragEnd;
+		onConnectionStart = oCS;
+		onConnectionFinish = oCF;
 
 		addClass("port");
 		// percentWidth = 100;
@@ -48,14 +55,20 @@ class PortView extends HBox {
 	/** Start a new connection from this port */
 	private function startDragConnection(e:MouseEvent):Void {
 		e.cancel();
-		NodeCanvas.instance.beginConnection(this, e);
+		if (onConnectionStart != null) {
+			onConnectionStart(this, e);
+		}
+		// NodeCanvas.instance.beginConnection(this, e);
 	}
 
 	private function endDragConnection(e:MouseEvent):Void {
 		if (data.direction != PortDirection.Input)
 			return;
 		e.cancel();
-		var result = NodeCanvas.instance.finishConnection(this);
+		// var result = NodeCanvas.instance.finishConnection(this);
+		var result = "";
+		if (onConnectionFinish != null)
+			result = onConnectionFinish(this, e);
 		if (onDragEnd != null)
 			onDragEnd(result);
 	}

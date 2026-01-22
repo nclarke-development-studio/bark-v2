@@ -16,6 +16,9 @@ class CanvasSelection {
 	var start:Point;
 	var end:Point;
 
+	// callbacks
+	public var onRequestContextMenu:(c:NodeCanvas, e:MouseEvent) -> Void;
+
 	public function new(canvas:NodeCanvas) {
 		this.canvas = canvas;
 
@@ -25,11 +28,9 @@ class CanvasSelection {
 
 		selectionArea.onRightClick = function(e:MouseEvent) {
 			e.cancel();
-
-			var menu = new SelectionRectContextMenu(canvas, canvas.controller);
-			menu.left = e.screenX;
-			menu.top = e.screenY;
-			menu.show();
+			if (onRequestContextMenu != null) {
+				onRequestContextMenu(canvas, e);
+			}
 		}
 	}
 

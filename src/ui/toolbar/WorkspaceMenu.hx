@@ -7,11 +7,12 @@ import haxe.ui.containers.menus.Menu;
 import haxe.ui.containers.menus.MenuItem;
 
 class WorkspaceMenu extends Menu {
-	var editor:EditorController;
+	public var onRequestCreateWorkspace:(String) -> Void;
+	public var onRequestGetWorkspaceName:() -> String;
+	public var onRequestRenameWorkspace:(String) -> Void;
 
-	public function new(editor:EditorController) {
+	public function new() {
 		super();
-		this.editor = editor;
 
 		text = "Workspace";
 
@@ -28,8 +29,8 @@ class WorkspaceMenu extends Menu {
 		item.onClick = _ -> {
 			var dialog = new NewWorkspaceDialog();
 			dialog.onConfirm = name -> {
-				trace('new workspace created');
-				editor.newWorkspace(name);
+				if (onRequestCreateWorkspace != null)
+					onRequestCreateWorkspace(name);
 			}
 			dialog.showDialog();
 		};
@@ -80,8 +81,8 @@ class WorkspaceMenu extends Menu {
 		item.text = "Edit";
 		item.onClick = _ -> {
 			var dialog = new NewWorkspaceDialog();
-			dialog.workspaceName.text = editor.workspace.name;
-			dialog.onConfirm = name -> editor.renameWorkspace(name);
+			dialog.workspaceName.text = onRequestGetWorkspaceName();
+			dialog.onConfirm = name -> onRequestRenameWorkspace(name);
 			dialog.showDialog();
 		};
 		return item;
@@ -108,4 +109,8 @@ class WorkspaceMenu extends Menu {
 		};
 		return item;
 	}
+
+	// public function rebuild(w:Workspace) {
+
+	// }
 }

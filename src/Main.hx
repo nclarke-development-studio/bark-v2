@@ -1,14 +1,14 @@
 package;
 
-import data.PortData.PortDirection;
-import haxe.ui.util.GUID;
+import ui.nodes.NodeFactory;
+import ui.EditorBinder;
+import core.EditorSession;
 import ui.toolbar.Toolbar;
 import ui.palette.Palette;
 import haxe.ui.containers.VBox;
 import haxe.ui.containers.HBox;
 import haxe.ui.Toolkit;
 import haxe.CallStack;
-import ui.EditorController;
 import ui.canvas.NodeCanvas;
 import haxe.ui.HaxeUIApp;
 
@@ -28,13 +28,13 @@ class Main {
 				var canvas = new NodeCanvas();
 				var palette = new Palette();
 				var toolbar = new Toolbar();
-				var editor = new EditorController(canvas, palette, toolbar);
+				var session = new EditorSession();
 
-				// canvas.init();
-				palette.init();
-				toolbar.init();
+				var editorBinder = new EditorBinder(session, canvas, palette, toolbar);
 
-				editor.newWorkspace('default');
+				// var schemaBinder = new EditorBinder(session, canvas, schemapalette);
+
+				session.createWorkspace('default');
 
 				root.addComponent(toolbar);
 
@@ -43,21 +43,7 @@ class Main {
 				mainHBox.percentHeight = 100;
 				mainHBox.horizontalSpacing = 0;
 
-				editor.addNode({
-					id: "root",
-					type: 'node',
-					x: 50,
-					y: 50,
-					ports: [
-						{
-							id: GUID.uuid(),
-							name: 'mainSource',
-							direction: PortDirection.Output,
-							isMain: false
-						}
-					],
-					fields: [],
-				});
+				session.addNode(NodeFactory.createNode('source', 100, 100, 'root'));
 
 				mainHBox.addComponent(palette);
 				mainHBox.addComponent(canvas);

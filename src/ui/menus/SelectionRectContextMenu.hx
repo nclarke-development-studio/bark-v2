@@ -1,17 +1,19 @@
 package ui.menus;
 
+import ui.canvas.CanvasSelection;
+import core.EditorSession;
 import ui.canvas.NodeCanvas;
 import haxe.ui.containers.menus.Menu;
 import haxe.ui.containers.menus.MenuItem;
 
 class SelectionRectContextMenu extends Menu {
-	public function new(canvas:NodeCanvas, controller:EditorController) {
+	public function new(c:NodeCanvas, session:EditorSession) {
 		super();
 
 		var saveNodesItem = new MenuItem();
 		saveNodesItem.text = "Save Node(s)";
 		saveNodesItem.onClick = _ -> {
-			trace(controller.saveSelected('test'));
+			// trace(session.createSchema(name, c.selectedNodes));
 		};
 		addComponent(saveNodesItem);
 

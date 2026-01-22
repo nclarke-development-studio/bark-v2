@@ -1,5 +1,7 @@
 package ui.toolbar;
 
+import core.Workspace;
+import data.SceneData;
 import haxe.ui.containers.dialogs.MessageBox.MessageBoxType;
 import ui.dialogs.NewSceneDialog;
 import haxe.ui.containers.dialogs.Dialog.DialogButton;
@@ -8,11 +10,17 @@ import haxe.ui.containers.menus.Menu;
 import haxe.ui.containers.menus.MenuItem;
 
 class SceneMenu extends Menu {
-	var editor:EditorController;
+	public var onRequestCreateScene:(String) -> Void;
+	public var onRequestSwitchScene:(String) -> Void;
+	public var onRequestDuplicateScene:(String) -> Void;
+	public var onRequestDeleteScene:(String) -> Void;
 
-	public function new(editor:EditorController) {
+	public var onRequestGetActiveScene:() -> SceneData;
+	public var onRequestGetWorkspaceScenes:() -> Array<SceneData>;
+	public var onRequestRenameScene:(String, String) -> Void;
+
+	public function new() {
 		super();
-		this.editor = editor;
 
 		text = "Scene";
 
@@ -21,7 +29,7 @@ class SceneMenu extends Menu {
 		addComponent(duplicateSceneItem());
 		addComponent(openSceneItem());
 		addComponent(saveSceneItem());
-		// addComponent(deleteSceneItem());
+		addComponent(deleteSceneItem());
 		addComponent(exportSceneItem());
 	}
 
@@ -31,8 +39,11 @@ class SceneMenu extends Menu {
 		item.onClick = _ -> {
 			var dialog = new NewSceneDialog();
 			dialog.onConfirm = name -> {
-				editor.createScene(name);
-				editor.switchScene(name);
+				if (onRequestCreateScene != null)
+					onRequestCreateScene(name);
+
+				if (onRequestSwitchScene != null)
+					onRequestSwitchScene(name);
 			};
 			dialog.showDialog();
 		};
@@ -43,9 +54,16 @@ class SceneMenu extends Menu {
 		var item = new MenuItem();
 		item.text = "Edit";
 		item.onClick = _ -> {
+			if (onRequestGetActiveScene == null || onRequestRenameScene == null)
+				return;
+
+			var activeScene = onRequestGetActiveScene();
+			if (activeScene == null)
+				return;
+
 			var dialog = new NewSceneDialog();
-			dialog.sceneNameText = editor.workspace.getActiveScene().id;
-			dialog.onConfirm = name -> editor.renameScene(editor.workspace.getActiveScene().id, name);
+			dialog.sceneNameText = activeScene.id;
+			dialog.onConfirm = name -> onRequestRenameScene(activeScene.id, name);
 			dialog.showDialog();
 		};
 		return item;
@@ -54,7 +72,14 @@ class SceneMenu extends Menu {
 	function duplicateSceneItem():MenuItem {
 		var item = new MenuItem();
 		item.text = "Duplicate";
-		item.onClick = _ -> editor.duplicateScene();
+		item.onClick = _ -> {
+			if (onRequestDuplicateScene == null || onRequestGetActiveScene == null)
+				return;
+
+			var activeScene = onRequestGetActiveScene();
+			if (activeScene != null)
+				onRequestDuplicateScene(activeScene.id);
+		};
 		return item;
 	}
 
@@ -100,13 +125,24 @@ class SceneMenu extends Menu {
 	function deleteSceneItem():MenuItem {
 		var item = new MenuItem();
 		item.text = "Delete";
-		item.disabled = Lambda.count(editor.workspace.scenes) <= 1;
+
+		// initial disabled state (safe)
+		item.disabled = onRequestGetWorkspaceScenes == null
+			|| onRequestGetWorkspaceScenes() == null
+			|| onRequestGetWorkspaceScenes().length <= 1;
 
 		item.onClick = _ -> {
-			var sceneId = editor.workspace.activeSceneId;
+			if (onRequestDeleteScene == null || onRequestGetActiveScene == null)
+				return;
+
+			var activeScene = onRequestGetActiveScene();
+			if (activeScene == null)
+				return;
+
+			var sceneId = activeScene.id;
 			Dialogs.messageBox('Delete scene "$sceneId"?\n\nThis action cannot be undone.', "Delete Scene", MessageBoxType.TYPE_WARNING, true, button -> {
 				if (button == DialogButton.OK) {
-					editor.deleteScene(sceneId);
+					onRequestDeleteScene(sceneId);
 				}
 			});
 		};
@@ -133,5 +169,18 @@ class SceneMenu extends Menu {
 			});
 		};
 		return item;
+	}
+
+	public function rebuild(w:Workspace) {
+		var scenes = onRequestGetWorkspaceScenes != null ? onRequestGetWorkspaceScenes() : null;
+
+		var canDelete = scenes != null && scenes.length > 1;
+
+		for (c in childComponents) {
+			var item = Std.downcast(c, MenuItem);
+			if (item != null && item.text == "Delete") {
+				item.disabled = !canDelete;
+			}
+		}
 	}
 }

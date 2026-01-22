@@ -1,5 +1,6 @@
 package core;
 
+import util.ArrayUtils;
 import data.*;
 
 class Graph {
@@ -21,11 +22,16 @@ class Graph {
 		data.connections = data.connections.filter(c -> !usesNode(c, id));
 	}
 
+	public function getNode(id:String) {
+		var node = ArrayUtils.find(data.nodes, n -> n.id == id);
+		return node;
+	}
+
 	public function addConnection(c:ConnectionData) {
 		data.connections.push(c);
 	}
 
-	public function RemoveConnection(id:String) {
+	public function removeConnection(id:String) {
 		data.connections = data.connections.filter(c -> c.id != id);
 	}
 
