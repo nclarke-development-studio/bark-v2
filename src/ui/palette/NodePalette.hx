@@ -1,5 +1,6 @@
 package ui.palette;
 
+import ui.palette.schema.SchemaEditor;
 import core.Workspace;
 import haxe.Resource;
 import haxe.Json;
@@ -23,6 +24,7 @@ class NodePalette extends VBox {
 	var showCreateNodeButton:Bool;
 
 	public var onNodeDrop:(nodeGroup:NodeGroupSchema, x:Float, y:Float) -> Void;
+	public var onSchemaCreate:(NodeGroupSchema) -> Void;
 
 	var builtInSchemas:Array<NodeGroupSchema> = [];
 
@@ -43,8 +45,6 @@ class NodePalette extends VBox {
 		var raw = Resource.getString("nodes/builtin.json");
 		var parsed = Json.parse(raw);
 		builtInSchemas = parsed.nodes;
-
-		trace('loaded builtin schemas');
 	}
 
 	public function rebuild(workspace:Workspace):Void {
@@ -80,7 +80,7 @@ class NodePalette extends VBox {
 			var addBtn = new Button();
 			addBtn.text = "+ Create Node";
 			addBtn.onClick = _ -> {
-				var dialog = new SchemaEditor(null, workspace);
+				var dialog = new SchemaEditor(workspace, null, (schema) -> if (onSchemaCreate != null) onSchemaCreate(schema));
 				dialog.showDialog();
 			};
 			customContainer.addComponent(addBtn);

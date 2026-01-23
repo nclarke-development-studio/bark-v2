@@ -94,6 +94,14 @@ class NodeView extends VBox {
 		addFieldButtons();
 		addComponent(fieldContainer);
 		populateData();
+
+		// var dataEditor = new NodeDataEditor(data);
+		// dataEditor.onLayoutChanged = () -> {
+		// 	updatePorts();
+		// 	if (parent != null)
+		// 		parent.invalidate();
+		// };
+		// addComponent(dataEditor);
 	}
 
 	private function populateData() {
@@ -174,6 +182,15 @@ class NodeView extends VBox {
 
 			fieldContainer.addComponent(grid);
 		}
+	}
+
+	public function rebuildFields():Void {
+		removeComponent(fieldContainer);
+		fieldContainer = new VBox();
+		fieldContainer.percentWidth = 100;
+		addComponent(fieldContainer);
+		populateData();
+		updatePorts();
 	}
 
 	private function addFieldButtons():Void {

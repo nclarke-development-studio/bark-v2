@@ -15,6 +15,7 @@ class Palette extends VBox {
 	public var onRequestSceneSelect:(id:String) -> Void;
 	public var onRequestSceneCreate:(id:String) -> Void;
 	public var onRequestNodeDrop:(NodeGroupSchema, Float, Float) -> Void;
+	public var onRequestSchemaCreate:(NodeGroupSchema) -> Void;
 
 	public function new() {
 		super();
@@ -32,6 +33,8 @@ class Palette extends VBox {
 
 	public function init() {
 		nodePalette.onNodeDrop = onRequestNodeDrop;
+		nodePalette.onSchemaCreate = onRequestSchemaCreate;
+
 		scenePalette.onSceneCreate = onRequestSceneCreate;
 		scenePalette.onSceneSelect = onRequestSceneSelect;
 

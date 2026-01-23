@@ -1,10 +1,9 @@
-package ui;
+package ui.palette.schema;
 
-import ui.palette.SchemaEditorPalette;
-import ui.menus.SelectionRectContextMenu;
-import ui.menus.NodeContextMenu;
-import ui.menus.GraphContextMenu;
-import ui.toolbar.Toolbar;
+import data.NodeData.NodeGroupSchema;
+import ui.palette.schema.menus.SelectionRectContextMenu;
+import ui.palette.schema.menus.NodeContextMenu;
+import ui.palette.schema.menus.GraphContextMenu;
 import ui.canvas.NodeCanvas;
 import core.EditorSession;
 
@@ -12,12 +11,15 @@ class SchemaEditorBinder {
 	var session:EditorSession;
 	var canvas:NodeCanvas;
 	var palette:SchemaEditorPalette;
-	var toolbar:Toolbar;
+	var schema:NodeGroupSchema;
+	var close:(NodeGroupSchema) -> Void;
 
-	public function new(s:EditorSession, ?c:NodeCanvas, ?p:SchemaEditorPalette) {
+	public function new(s:EditorSession, ?c:NodeCanvas, ?p:SchemaEditorPalette, ?schema:NodeGroupSchema, ?close:(NodeGroupSchema) -> Void) {
 		session = s;
 		canvas = c;
 		palette = p;
+		this.schema = schema;
+		this.close = close;
 
 		// canvas.onRequestAddNode = (x, y) -> {
 		// 	session.addNode(makeNodeAt(x, y));
@@ -28,9 +30,7 @@ class SchemaEditorBinder {
 				case GraphChanged:
 					if (canvas != null) canvas.rebuild(session.graph);
 				case WorkspaceChanged:
-					if (palette != null)
-						palette.rebuild(session.workspace);
-					if (toolbar != null) toolbar.rebuild(session.workspace);
+					if (palette != null) palette.rebuild(session.workspace);
 			}
 		};
 
@@ -41,7 +41,7 @@ class SchemaEditorBinder {
 		if (canvas != null) {
 			// canvas binding
 			canvas.onRequestCanvasContextMenu = (canvas, e) -> {
-				var menu = new GraphContextMenu(canvas, session);
+				var menu = new GraphContextMenu(canvas, session, schema, close);
 				menu.left = e.screenX;
 				menu.top = e.screenY;
 				menu.show();
@@ -81,7 +81,7 @@ class SchemaEditorBinder {
 					}
 				}
 			}
-			
+
 			palette.init();
 			palette.rebuild(session.workspace);
 		}

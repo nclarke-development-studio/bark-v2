@@ -46,8 +46,8 @@ interface IEditorSession {
 	function loadWorkspace(path:String):Void;
 	function saveWorkspace(path:String = "graph.json"):Void;
 
-	function addNodeToWorkspace(n:NodeGroupSchema):Void;
-	function removeNodeFromWorkspace(id:String):Void;
+	function addSchemaToWorkspace(n:NodeGroupSchema):Void;
+	function removeSchemaFromWorkspace(id:String):Void;
 }
 
 enum EditorChange {
@@ -274,13 +274,13 @@ class EditorSession implements IEditorSession {
 		// GraphSerializer.save(path, data);
 	}
 
-	public function addNodeToWorkspace(n:NodeGroupSchema) {
+	public function addSchemaToWorkspace(n:NodeGroupSchema) {
 		// TODO: error check
 		workspace.schemas.push(n);
 		notify(WorkspaceChanged);
 	}
 
-	public function removeNodeFromWorkspace(id:String) {
+	public function removeSchemaFromWorkspace(id:String) {
 		workspace.schemas.filter(s -> s.name != id);
 		notify(WorkspaceChanged);
 	}

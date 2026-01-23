@@ -1,0 +1,8 @@
+<dialog title="Save Schema" width="300">
+	<vbox style="padding:10px; spacing:8px;">
+		<label text="Schema Name" />
+		<textfield id="schemaName"
+			placeholder="default"
+			validator="required" />
+	</vbox>
+</dialog>

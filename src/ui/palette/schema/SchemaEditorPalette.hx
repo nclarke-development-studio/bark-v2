@@ -1,4 +1,4 @@
-package ui.palette;
+package ui.palette.schema;
 
 import data.NodeData.NodeGroupSchema;
 import core.Workspace;

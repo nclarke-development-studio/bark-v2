@@ -1,0 +1,4 @@
+<dialog title="Are you sure?" width="300">
+	<vbox style="padding:10px; spacing:8px;">
+	</vbox>
+</dialog>

@@ -48,8 +48,8 @@ class EditorBinder {
 				menu.show();
 			};
 
-			canvas.onRequestNodeContextMenu = (canvas, e) -> {
-				var menu = new NodeContextMenu(canvas, session);
+			canvas.onRequestNodeContextMenu = (node, e) -> {
+				var menu = new NodeContextMenu(node, session, canvas);
 				menu.left = e.screenX;
 				menu.top = e.screenY;
 				menu.show();
@@ -100,6 +100,9 @@ class EditorBinder {
 						canvas.selectNode(view);
 					}
 				}
+			}
+			palette.onRequestSchemaCreate = (s) -> {
+				session.addSchemaToWorkspace(s);
 			}
 
 			palette.onRequestSceneCreate = (id) -> {

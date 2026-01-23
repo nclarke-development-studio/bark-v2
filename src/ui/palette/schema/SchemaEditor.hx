@@ -1,4 +1,4 @@
-package ui.palette;
+package ui.palette.schema;
 
 import core.EditorSession;
 import ui.canvas.NodeCanvas;
@@ -8,7 +8,7 @@ import data.NodeData.NodeGroupSchema;
 import haxe.ui.containers.dialogs.Dialog;
 
 class SchemaEditor extends Dialog {
-	public function new(?schema:NodeGroupSchema, workspace:Workspace) {
+	public function new(workspace:Workspace, ?schema:NodeGroupSchema, ?onClose:(NodeGroupSchema) -> Void) {
 		super();
 
 		var root = new HBox();
@@ -19,7 +19,18 @@ class SchemaEditor extends Dialog {
 		var palette = new SchemaEditorPalette();
 		var session = new EditorSession();
 
-		var editorBinder = new SchemaEditorBinder(session, canvas, palette);
+		// TODO: maybe use the same session?
+		session.workspace = workspace;
+
+		if (schema != null) {
+			session.createNodes(schema, 100, 100);
+		}
+
+		var editorBinder = new SchemaEditorBinder(session, canvas, palette, schema, (schema) -> {
+			if (onClose != null)
+				onClose(schema);
+			hide();
+		});
 
 		root.addComponent(palette);
 		root.addComponent(canvas);

@@ -50,11 +50,12 @@ class WorkspaceUtils {
 		}
 
 		// also allow named main ports
-		// for (p in n.ports) {
-		// 	if (p.isMain) {
-		// 		map.set(p.id, p.name);
-		// 	}
-		// }
+		for (p in n.ports) {
+			// if (p.isMain) {
+			// 	map.set(p.id, p.name);
+			// }
+			map.set(p.id, p.name);
+		}
 
 		return map;
 	}
@@ -92,7 +93,7 @@ class WorkspaceUtils {
 				type: n.type,
 				color: "#ffffff",
 				position: [n.x - baseX, n.y - baseY],
-				ports: [],
+				ports: n.ports,
 				fields: encodeFields(n.fields)
 			});
 		}
