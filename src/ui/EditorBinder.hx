@@ -66,6 +66,21 @@ class EditorBinder {
 				session.removeConnection(c);
 			}
 
+			canvas.onRequestNodeCreate = (s, x, y) -> {
+				var dropPosition = canvas.contentLayer.globalToLocal(new openfl.geom.Point(x, y));
+				var nodes = session.createNodes(s, dropPosition.x, dropPosition.y);
+
+				// select the nodes afterwards
+				for (n in nodes) {
+					var view = canvas.getNodeView(n.id);
+					if (view != null) {
+						canvas.selectNode(view);
+					}
+				}
+
+				return nodes;
+			}
+
 			canvas.connectPorts = session.connectPorts;
 		}
 

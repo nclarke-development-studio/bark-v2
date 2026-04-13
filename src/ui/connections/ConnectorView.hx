@@ -7,7 +7,7 @@ import haxe.ui.containers.Box;
 import haxe.ui.components.TextField;
 import haxe.ui.events.DragEvent;
 
-import ui.EditorController;
+// import ui.EditorController;
 import ui.nodes.NodeView;
 import data.PortData;
 

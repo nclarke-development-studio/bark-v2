@@ -35,13 +35,11 @@ class PortView extends HBox {
 		addClass("port");
 		// percentWidth = 100;
 
-		// optional: horizontal layout, icon + label
 		// var label = new Label();
 		// label.text = data.name;
 		// label.addClass("port-label");
 		// addComponent(label);
 
-		// Optional: small button for adding connections interactively
 		connectBtn = new Button();
 		connectBtn.text = "●"; // simple connection dot
 		connectBtn.addClass("port-button");
@@ -52,20 +50,17 @@ class PortView extends HBox {
 		connectBtn.registerEvent(MouseEvent.MOUSE_UP, endDragConnection);
 	}
 
-	/** Start a new connection from this port */
 	private function startDragConnection(e:MouseEvent):Void {
 		e.cancel();
 		if (onConnectionStart != null) {
 			onConnectionStart(this, e);
 		}
-		// NodeCanvas.instance.beginConnection(this, e);
 	}
 
 	private function endDragConnection(e:MouseEvent):Void {
 		if (data.direction != PortDirection.Input)
 			return;
 		e.cancel();
-		// var result = NodeCanvas.instance.finishConnection(this);
 		var result = "";
 		if (onConnectionFinish != null)
 			result = onConnectionFinish(this, e);
@@ -77,12 +72,10 @@ class PortView extends HBox {
 		return connectBtn.localToGlobal(new Point(connectBtn.width / 2, connectBtn.height / 2));
 	}
 
-	/** Optional: add a connection to this port */
 	public function addConnection(conn:ConnectionView):Void {
 		connections.push(conn);
 	}
 
-	/** Optional: remove a connection */
 	public function removeConnection(conn:ConnectionView):Void {
 		connections.remove(conn);
 	}

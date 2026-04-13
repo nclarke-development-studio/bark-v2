@@ -53,6 +53,7 @@ class NodeCanvas extends Absolute {
 	// callbacks
 	public var onRequestCanvasContextMenu:(NodeCanvas, MouseEvent) -> Void;
 	public var onRequestNodeContextMenu:(NodeView, MouseEvent) -> Void;
+	public var onRequestNodeCreate:(node:NodeGroupSchema, x:Float, y:Float) -> Array<NodeData>;
 	public var onRequestSelectionContextMenu:(NodeCanvas, MouseEvent) -> Void;
 	public var onRemoveConnection:(ConnectionData) -> Void;
 	public var connectPorts:(NodeData, PortData, NodeData, PortData) -> ConnectionData;
@@ -149,8 +150,44 @@ class NodeCanvas extends Absolute {
 	}
 
 	@:bind(this, MouseEvent.MOUSE_UP)
-	function onMouseUp(e) {
+	function onMouseUp(e:MouseEvent) {
 		selection.endSelection();
+		// if we're dragging, we need to create a new node at this point
+		if (connectionPreview.pendingPort != null) {
+			var s:NodeGroupSchema = {
+				name: 'Basic Node',
+				color: 'green',
+				nodes: [
+					{
+						name: 'Basic Node',
+						type: 'base',
+						color: 'green',
+						position: [0, 0],
+						fields: [],
+						ports: [
+							{
+								id: '0',
+								name: "mainSource",
+								isMain: true,
+								direction: Output
+							},
+							{
+								id: '1',
+								name: "mainTarget",
+								isMain: true,
+								direction: Input
+							}
+						]
+					}
+				],
+				edges: [],
+			}
+			var nds = onRequestNodeCreate(s, e.screenX, e.screenY);
+			
+			// TODO: make this more reliable
+
+			connectPorts(connectionPreview.pendingPort.node.data, connectionPreview.pendingPort.data, nds[0], nds[0].ports[1]);
+		}
 		cancelPreview();
 	}
 
@@ -187,6 +224,7 @@ class NodeCanvas extends Absolute {
 
 	// Finishing a connection
 	public function finishConnection(to:PortView) {
+		// create new node if we're dropping onto empty space
 		return connectionPreview.finishConnection(to);
 	}
 
