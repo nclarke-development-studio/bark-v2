@@ -186,7 +186,7 @@ class NodeCanvas extends Absolute {
 		selection.endSelection();
 		selection.endMove();
 		// if we're dragging, we need to create a new node at this point
-		if (connectionPreview.pendingPort != null) {
+		if (connectionPreview.pendingPort != null && hitEmptySpace(e)) {
 			var s:NodeGroupSchema = {
 				name: 'Basic Node',
 				color: 'green',
@@ -267,7 +267,6 @@ class NodeCanvas extends Absolute {
 
 	// Finishing a connection
 	public function finishConnection(to:PortView) {
-		// create new node if we're dropping onto empty space
 		return connectionPreview.finishConnection(to);
 	}
 

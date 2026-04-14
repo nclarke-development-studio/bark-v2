@@ -33,8 +33,8 @@ class NodeView extends VBox {
 	public var outgoingConnections:Array<PortView> = [];
 	public var incomingConnections:Array<PortView> = [];
 
-	public var sourcePort:PortView;
-	public var targetPort:PortView;
+	// public var sourcePort:PortView;
+	// public var targetPort:PortView;
 
 	public var fieldContainer:VBox;
 
@@ -59,6 +59,7 @@ class NodeView extends VBox {
 		var header = new Label();
 		header.text = data.type;
 		header.addClass("node-header");
+		mouseEnabled = true;
 		addComponent(header);
 	}
 

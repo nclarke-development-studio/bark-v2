@@ -20,6 +20,7 @@ class CanvasConnectionPreview {
 		previewCable = new Canvas();
 		previewCable.percentWidth = previewCable.percentHeight = 100;
 		previewCable.mouseEnabled = false;
+		previewCable.mouseChildren = false;
 		previewCable.visible = false;
 		previewCable.backgroundColor = 0x000000;
 	}

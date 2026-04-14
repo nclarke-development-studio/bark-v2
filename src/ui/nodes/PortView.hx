@@ -41,13 +41,15 @@ class PortView extends HBox {
 		// addComponent(label);
 
 		connectBtn = new Button();
-		connectBtn.text = "●"; // simple connection dot
+		connectBtn.text = "●";
 		connectBtn.addClass("port-button");
 		addComponent(connectBtn);
 
 		// enable dragging connections from this port
 		connectBtn.registerEvent(MouseEvent.MOUSE_DOWN, startDragConnection);
 		connectBtn.registerEvent(MouseEvent.MOUSE_UP, endDragConnection);
+
+		mouseEnabled = true;
 	}
 
 	private function startDragConnection(e:MouseEvent):Void {
@@ -57,10 +59,11 @@ class PortView extends HBox {
 		}
 	}
 
+	// @:bind(this, MouseEvent.MOUSE_UP)
 	private function endDragConnection(e:MouseEvent):Void {
+		e.cancel();
 		if (data.direction != PortDirection.Input)
 			return;
-		e.cancel();
 		var result = "";
 		if (onConnectionFinish != null)
 			result = onConnectionFinish(this, e);
