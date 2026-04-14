@@ -1,5 +1,6 @@
 package ui.canvas;
 
+import ui.canvas.MiniMap;
 import data.PortData;
 import data.NodeData;
 import data.ConnectionData;
@@ -25,6 +26,7 @@ class NodeCanvas extends Absolute {
 	// graph visuals
 	public var nodes:Array<NodeView> = [];
 	public var connections:Array<ConnectionView> = [];
+	public var minimap:MiniMap;
 
 	// Maps for fast edge lookup
 	public var edgesIntoMap:Map<String, Array<ConnectionView>>;
@@ -41,6 +43,7 @@ class NodeCanvas extends Absolute {
 	public var contentLayer:Absolute;
 	public var edgeLayer:Absolute;
 	public var nodeLayer:Absolute;
+	public var uiLayer:Absolute;
 
 	public var contentBounds:Rectangle;
 
@@ -87,6 +90,11 @@ class NodeCanvas extends Absolute {
 		nodeLayer.percentWidth = nodeLayer.percentHeight = 100;
 		contentLayer.addComponent(nodeLayer);
 
+		uiLayer = new Absolute();
+		uiLayer.percentWidth = uiLayer.percentHeight = 100;
+		uiLayer.mouseEnabled = false;
+		addComponent(uiLayer);
+
 		for (node in nodes) {
 			util.DragUtil.makeScaleAwareDraggable(node, () -> zoom, contentBounds, function(x, y) {
 				node.data.x = x;
@@ -107,10 +115,14 @@ class NodeCanvas extends Absolute {
 			selection.onRequestContextMenu = onRequestSelectionContextMenu;
 
 		connectionPreview = new CanvasConnectionPreview(this);
+		uiLayer.addComponent(connectionPreview.previewCable);
 		graphSync = new CanvasGraphSync(this);
 
 		registerMouseEvents();
 		panZoom.updateContentBounds();
+
+		minimap = new MiniMap(this);
+		uiLayer.addComponent(minimap);
 	}
 
 	override function onResized() {
@@ -119,6 +131,13 @@ class NodeCanvas extends Absolute {
 		if (grid != null) {
 			grid.drawGrid();
 		}
+
+		haxe.ui.Toolkit.callLater(() -> {
+			if (minimap != null) {
+				minimap.fixPosition();
+				minimap.update();
+			}
+		});
 	}
 
 	function registerMouseEvents() {
@@ -146,6 +165,7 @@ class NodeCanvas extends Absolute {
 		}
 		if (connectionPreview.isPreviewing()) {
 			connectionPreview.drawPreviewCable();
+			minimap.updateComponentDisplay();
 		}
 	}
 
@@ -183,9 +203,8 @@ class NodeCanvas extends Absolute {
 				edges: [],
 			}
 			var nds = onRequestNodeCreate(s, e.screenX, e.screenY);
-			
-			// TODO: make this more reliable
 
+			// TODO: make this more stable
 			connectPorts(connectionPreview.pendingPort.node.data, connectionPreview.pendingPort.data, nds[0], nds[0].ports[1]);
 		}
 		cancelPreview();
@@ -220,6 +239,7 @@ class NodeCanvas extends Absolute {
 	// Starting a connection
 	public function beginConnection(p:PortView, e:MouseEvent) {
 		connectionPreview.beginConnection(p, e);
+		this.setComponentIndex(minimap, this.numComponents - 1);
 	}
 
 	// Finishing a connection
@@ -255,5 +275,20 @@ class NodeCanvas extends Absolute {
 
 	public function updateContentBounds() {
 		panZoom.updateContentBounds();
+		// defer draw so we have correct bounds
+		haxe.ui.Toolkit.callLater(() -> {
+			if (minimap != null) {
+				this.setComponentIndex(minimap, this.numComponents - 1);
+				minimap.update();
+			}
+		});
+	}
+
+	public function panTo(worldX:Float, worldY:Float) {
+		// Center the viewport on the target world coordinates
+		contentLayer.left = -(worldX * zoom) + (this.width / 2);
+		contentLayer.top = -(worldY * zoom) + (this.height / 2);
+		
+		updateContentBounds();
 	}
 }

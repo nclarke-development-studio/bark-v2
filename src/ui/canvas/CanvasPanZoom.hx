@@ -96,6 +96,10 @@ class CanvasPanZoom {
 
 		canvas.refreshConnections();
 		canvas.grid.drawGrid();
+
+		if (canvas.minimap != null) {
+			canvas.minimap.update();
+		}
 	}
 
 	// TODO: only do this based on the current bounds vs the node being dragged ( parameter ? )

@@ -5,7 +5,6 @@ import data.PortData.PortDirection;
 import haxe.ui.components.Canvas;
 import haxe.ui.geom.Point;
 import ui.nodes.PortView;
-import ui.nodes.NodeView;
 
 class CanvasConnectionPreview {
 	private var canvas:NodeCanvas;
@@ -21,6 +20,8 @@ class CanvasConnectionPreview {
 		previewCable = new Canvas();
 		previewCable.percentWidth = previewCable.percentHeight = 100;
 		previewCable.mouseEnabled = false;
+		previewCable.visible = false;
+		previewCable.backgroundColor = 0x000000;
 	}
 
 	/** Begin dragging a connection from a port */
@@ -30,10 +31,10 @@ class CanvasConnectionPreview {
 
 		pendingPort = p;
 
-		if (!canvas.containsComponent(previewCable)) {
-			canvas.addComponent(previewCable);
-		}
-
+		// if (!canvas.containsComponent(previewCable)) {
+		// 	canvas.addComponent(previewCable);
+		// }
+		previewCable.visible = true;
 		drawPreviewCable();
 	}
 
@@ -50,14 +51,14 @@ class CanvasConnectionPreview {
 	/** Cancel the current preview */
 	public function cancelPreview():Void {
 		if (pendingPort != null) {
-			if (canvas.containsComponent(previewCable)) {
-				canvas.removeComponent(previewCable);
-			}
+			// if (canvas.containsComponent(previewCable)) {
+			// 	canvas.removeComponent(previewCable);
+			// }
+			previewCable.visible = false;
 			pendingPort = null;
 		}
 	}
 
-	/** Call this every frame or on mouse move to update the cable */
 	public function drawPreviewCable():Void {
 		if (pendingPort == null || previewCable == null)
 			return;
