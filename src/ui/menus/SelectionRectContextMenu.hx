@@ -15,19 +15,21 @@ class SelectionRectContextMenu extends Menu {
 			// trace(session.createSchema(name, c.selectedNodes));
 		};
 		addComponent(saveNodesItem);
-		
-		var saveNodesItem = new MenuItem();
-		saveNodesItem.text = "Duplicate Node(s)";
-		saveNodesItem.onClick = _ -> {
+
+		var duplicateNodesItem = new MenuItem();
+		duplicateNodesItem.text = "Duplicate Node(s)";
+		duplicateNodesItem.onClick = _ -> {
 			// trace(session.createSchema(name, c.selectedNodes));
 		};
-		addComponent(saveNodesItem);
+		addComponent(duplicateNodesItem);
 
-		var deleteNodes = new MenuItem();
-		deleteNodes.text = "Delete Node(s)";
-		deleteNodes.onClick = _ -> {
-			trace('delete nodes');
+		var deleteNodesItem = new MenuItem();
+		deleteNodesItem.text = "Delete Node(s)";
+		deleteNodesItem.onClick = _ -> {
+			var ids = c.selectedNodes.map(n -> n.data.id);
+			session.removeNodes(ids);
+			c.selection.endSelection();
 		};
-		addComponent(deleteNodes);
+		addComponent(deleteNodesItem);
 	}
 }

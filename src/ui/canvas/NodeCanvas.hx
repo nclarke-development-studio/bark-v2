@@ -116,8 +116,6 @@ class NodeCanvas extends Absolute {
 		// canvas helpers
 		panZoom = new CanvasPanZoom(this);
 		selection = new CanvasSelection(this);
-		if (onRequestSelectionContextMenu != null)
-			selection.onRequestContextMenu = onRequestSelectionContextMenu;
 
 		contentLayer.addComponent(selection.selectionArea);
 
@@ -130,6 +128,11 @@ class NodeCanvas extends Absolute {
 
 		minimap = new MiniMap(this);
 		uiLayer.addComponent(minimap);
+	}
+
+	public function init() {
+		if (onRequestSelectionContextMenu != null)
+			selection.onRequestContextMenu = onRequestSelectionContextMenu;
 	}
 
 	override function onResized() {

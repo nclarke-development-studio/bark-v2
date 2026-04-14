@@ -19,7 +19,9 @@ interface IEditorSession {
 	public var workspace(default, null):Workspace;
 
 	function addNode(d:NodeData):Void;
+	function addNodes(d:Array<NodeData>):Void;
 	function removeNode(id:String):Void;
+	function removeNodes(ids:Array<String>):Void;
 	function duplicateNode(d:NodeData):Void;
 
 	function connectPorts(n1:NodeData, p1:PortData, n2:NodeData, p2:PortData):ConnectionData;
@@ -90,6 +92,13 @@ class EditorSession implements IEditorSession {
 		notify(GraphChanged);
 	}
 
+	public function addNodes(d:Array<NodeData>) {
+		for (node in d) {
+			history.execute(new AddNodeCommand(graph, node));
+			notify(GraphChanged);
+		}
+	}
+
 	public function createNodes(s:NodeGroupSchema, x, y):Array<NodeData> {
 		var decoded = WorkspaceUtils.decodeSchema(s, x, y);
 		var nodes = decoded.nodes;
@@ -113,6 +122,12 @@ class EditorSession implements IEditorSession {
 		var cmd = new RemoveNodeCommand(graph, node);
 		history.execute(cmd);
 		notify(GraphChanged);
+	}
+
+	public function removeNodes(ids:Array<String>) {
+		for (id in ids) {
+			removeNode(id);
+		}
 	}
 
 	public function duplicateNode(d:NodeData) {

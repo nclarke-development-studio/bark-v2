@@ -27,7 +27,7 @@ class CanvasSelection {
 		selectionArea = new Canvas();
 		selectionArea.percentWidth = selectionArea.percentHeight = 100;
 		selectionArea.visible = false;
-		selectionArea.mouseEnabled = false;
+		// selectionArea.mouseEnabled = false;
 
 		selectionArea.onRightClick = function(e:MouseEvent) {
 			e.cancel();

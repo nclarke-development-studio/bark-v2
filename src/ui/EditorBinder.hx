@@ -82,6 +82,8 @@ class EditorBinder {
 			}
 
 			canvas.connectPorts = session.connectPorts;
+
+			canvas.init();
 		}
 
 		// toolbar binding
