@@ -21,6 +21,7 @@ class GridBackground extends Canvas {
 		percentHeight = 100;
 		mouseEnabled = false;
 		backgroundColor = 0xffffff;
+		mouseEnabled = false;
 		alpha = 0.2;
 	}
 

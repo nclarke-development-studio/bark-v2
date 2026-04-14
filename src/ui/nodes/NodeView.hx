@@ -41,7 +41,7 @@ class NodeView extends VBox {
 	// callbacks
 	public var onRequestContextMenu:(n:NodeView, e:MouseEvent) -> Void;
 	public var onRemoveConnection:(c:ConnectionData) -> Void;
-	public var onNodeClicked:(n:NodeView) -> Void;
+	public var onNodeClicked:(e: MouseEvent, n:NodeView) -> Void;
 
 	// portview callbacks
 	public var onConnectionStart:(PortView, MouseEvent) -> Void;
@@ -67,25 +67,13 @@ class NodeView extends VBox {
 			addPort(port.id, port.name, port.direction);
 		}
 
-		// sourcePort = addPort("mainSource", "mainSource", PortDirection.Output);
-		// targetPort = addPort("mainTarget", "mainTarget", PortDirection.Input);
-		// "+" button for extra ports
-		// var addBtn = new Button();
-		// addBtn.text = "+";
-		// addBtn.onClick = _ -> addPort("Extra", false);
-		// addComponent(addBtn);
-
 		// Selection click
-		onClick = _onClick;
+		// onClick = _onClick;
 		// Context menu
 		registerEvent(MouseEvent.RIGHT_CLICK, e -> {
 			e.cancel();
 			if (onRequestContextMenu != null)
 				onRequestContextMenu(this, e);
-			// var menu = new NodeContextMenu(this, controller);
-			// menu.left = e.screenX;
-			// menu.top = e.screenY;
-			// menu.show();
 		});
 
 		fieldContainer = new VBox();
@@ -94,14 +82,6 @@ class NodeView extends VBox {
 		addFieldButtons();
 		addComponent(fieldContainer);
 		populateData();
-
-		// var dataEditor = new NodeDataEditor(data);
-		// dataEditor.onLayoutChanged = () -> {
-		// 	updatePorts();
-		// 	if (parent != null)
-		// 		parent.invalidate();
-		// };
-		// addComponent(dataEditor);
 	}
 
 	private function populateData() {
@@ -388,13 +368,10 @@ class NodeView extends VBox {
 			removeClass("selected", true);
 	}
 
-	private function _onClick(_:haxe.ui.events.MouseEvent):Void {
-		// if (!selected) {
-		// 	NodeCanvas.instance.selectNode(this);
-		// } else {
-		// 	NodeCanvas.instance.deselectNode(this);
-		// }
+	@:bind(this, MouseEvent.MOUSE_DOWN)
+	private function _onClick(e:MouseEvent):Void {
+		e.cancel();
 		if (onNodeClicked != null)
-			onNodeClicked(this);
+			onNodeClicked(e, this);
 	}
 }

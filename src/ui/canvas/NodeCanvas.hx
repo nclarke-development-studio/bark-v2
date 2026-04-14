@@ -1,5 +1,6 @@
 package ui.canvas;
 
+import haxe.ui.core.Component;
 import ui.canvas.MiniMap;
 import data.PortData;
 import data.NodeData;
@@ -96,12 +97,16 @@ class NodeCanvas extends Absolute {
 		addComponent(uiLayer);
 
 		for (node in nodes) {
-			util.DragUtil.makeScaleAwareDraggable(node, () -> zoom, contentBounds, function(x, y) {
-				node.data.x = x;
-				node.data.y = y;
-				refreshConnections(node);
-				updateContentBounds();
-			});
+			// var lastX:Float = 0;
+			// var lastY:Float = 0;
+
+			// util.DragUtil.makeScaleAwareDraggable(node, () -> zoom, contentBounds, function(x, y) {
+			// 	node.data.x = x;
+			// 	node.data.y = y;
+			// 	refreshConnections(node);
+			// 	updateContentBounds();
+			// });
+
 			nodeLayer.addComponent(node);
 		}
 
@@ -113,6 +118,8 @@ class NodeCanvas extends Absolute {
 		selection = new CanvasSelection(this);
 		if (onRequestSelectionContextMenu != null)
 			selection.onRequestContextMenu = onRequestSelectionContextMenu;
+
+		contentLayer.addComponent(selection.selectionArea);
 
 		connectionPreview = new CanvasConnectionPreview(this);
 		uiLayer.addComponent(connectionPreview.previewCable);
@@ -150,19 +157,24 @@ class NodeCanvas extends Absolute {
 
 	@:bind(this, MouseEvent.MOUSE_DOWN)
 	function onMouseDown(e:MouseEvent) {
+		var localPos = contentLayer.globalToLocal(new Point(e.screenX, e.screenY));
+
 		if (hitEmptySpace(e)) {
 			clearSelection();
+
+			selection.beginSelection(localPos.x, localPos.y);
 		}
-		var localPos = contentLayer.globalToLocal(new Point(e.screenX, e.screenY));
-		selection.beginSelection(localPos.x, localPos.y);
 	}
 
 	@:bind(this, MouseEvent.MOUSE_MOVE)
 	function onMouseMove(e:MouseEvent) {
+		var localPos = contentLayer.globalToLocal(new Point(e.screenX, e.screenY));
 		if (selection.selecting) {
-			var localPos = contentLayer.globalToLocal(new Point(e.screenX, e.screenY));
 			selection.update(localPos.x, localPos.y);
+		} else if (selection.movingSelectedNodes) {
+			selection.updateMove(localPos.x, localPos.y);
 		}
+
 		if (connectionPreview.isPreviewing()) {
 			connectionPreview.drawPreviewCable();
 			minimap.updateComponentDisplay();
@@ -172,6 +184,7 @@ class NodeCanvas extends Absolute {
 	@:bind(this, MouseEvent.MOUSE_UP)
 	function onMouseUp(e:MouseEvent) {
 		selection.endSelection();
+		selection.endMove();
 		// if we're dragging, we need to create a new node at this point
 		if (connectionPreview.pendingPort != null) {
 			var s:NodeGroupSchema = {
@@ -212,6 +225,16 @@ class NodeCanvas extends Absolute {
 
 	public function getNodeView(id:String) {
 		return ArrayUtils.find(nodes, p -> p.data.id == id);
+	}
+
+	public function nodeMouseDown(e:MouseEvent, n:NodeView) {
+		var localPos = contentLayer.globalToLocal(new Point(e.screenX, e.screenY));
+
+		if (!selectedNodes.contains(n)) {
+			clearSelection();
+			selectNode(n);
+		}
+		selection.beginMove(localPos.x, localPos.y);
 	}
 
 	public function selectNode(n:NodeView) {
@@ -270,7 +293,7 @@ class NodeCanvas extends Absolute {
 	}
 
 	function hitEmptySpace(e:MouseEvent):Bool {
-		return e.target == this;
+		return e.target == this || e.target == contentLayer;
 	}
 
 	public function updateContentBounds() {
@@ -288,7 +311,7 @@ class NodeCanvas extends Absolute {
 		// Center the viewport on the target world coordinates
 		contentLayer.left = -(worldX * zoom) + (this.width / 2);
 		contentLayer.top = -(worldY * zoom) + (this.height / 2);
-		
+
 		updateContentBounds();
 	}
 }

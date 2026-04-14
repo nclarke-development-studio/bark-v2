@@ -45,11 +45,8 @@ class CanvasGraphSync {
 			if (nv == null) {
 				nv = new NodeView(nodeData);
 
-				nv.onNodeClicked = (n) -> {
-					if (n.selected)
-						canvas.selectNode(n);
-					else
-						canvas.deselectNode(n);
+				nv.onNodeClicked = (e, n) -> {
+					canvas.nodeMouseDown(e, n);
 				}
 
 				nv.onRequestContextMenu = (n, e) -> {
@@ -76,12 +73,12 @@ class CanvasGraphSync {
 				nv.init();
 
 				// make draggable with scale-aware bounds
-				util.DragUtil.makeScaleAwareDraggable(nv, () -> canvas.zoom, canvas.contentBounds, function(x, y) {
-					nv.data.x = x;
-					nv.data.y = y;
-					canvas.refreshConnections(nv);
-					canvas.updateContentBounds();
-				});
+				// util.DragUtil.makeScaleAwareDraggable(nv, () -> canvas.zoom, canvas.contentBounds, function(x, y) {
+				// 	nv.data.x = x;
+				// 	nv.data.y = y;
+				// 	canvas.refreshConnections(nv);
+				// 	canvas.updateContentBounds();
+				// });
 
 				canvas.nodes.push(nv);
 				canvas.nodeLayer.addComponent(nv);
