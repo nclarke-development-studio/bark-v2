@@ -1,5 +1,8 @@
 package core;
 
+import haxe.Json;
+import haxe.ui.containers.dialogs.Dialog.DialogButton;
+import haxe.ui.containers.dialogs.Dialogs;
 import util.WorkspaceUtils;
 import util.WorkspaceUtils;
 import data.PortData;
@@ -12,6 +15,15 @@ import data.SceneData;
 import core.commands.AddNodeCommand;
 import data.NodeData;
 import data.ConnectionData;
+#if !js
+import sys.io.File;
+#end
+#if js
+import js.Browser;
+#end
+#if nodejs
+import js.node.Fs;
+#end
 
 interface IEditorSession {
 	public var graph(default, null):Graph;
@@ -35,9 +47,10 @@ interface IEditorSession {
 	function switchScene(id:String):Void;
 	function duplicateScene(id:String):Void;
 	function renameScene(oldId:String, newId:String):Bool;
-	function loadScene(path:String):Void;
-	function deleteScene(path:String):Void;
-	function saveScene(path:String = "graph.json"):Void;
+	function loadScene():Void;
+	function deleteScene(id:String):Void;
+	function saveScene():Void;
+	function exportScene():Void;
 
 	function getWorkspace():Workspace;
 	function getActiveScene():SceneData;
@@ -45,8 +58,9 @@ interface IEditorSession {
 	function getWorkspaceName():String;
 	function createWorkspace(id:String):Void;
 	function renameWorkspace(name:String):Void;
-	function loadWorkspace(path:String):Void;
-	function saveWorkspace(path:String = "graph.json"):Void;
+	function loadWorkspace():Void;
+	function saveWorkspace():Void;
+	function exportWorkspace():Void;
 
 	function addSchemaToWorkspace(n:NodeGroupSchema):Void;
 	function removeSchemaFromWorkspace(id:String):Void;
@@ -165,6 +179,7 @@ class EditorSession implements IEditorSession {
 			toNode: n2.id,
 			toPort: p2.id,
 			id: GUID.uuid(),
+			fields: [],
 		}
 		addConnection(conn);
 		return conn;
@@ -214,15 +229,83 @@ class EditorSession implements IEditorSession {
 		notify(WorkspaceChanged);
 	}
 
-	public function loadScene(path:String) {
-		graph.data = GraphSerializer.load(path);
-		history.clear();
-		notify(GraphChanged);
-		notify(WorkspaceChanged);
+	public function loadScene() {
+		Dialogs.openFile(function(button, files) {
+			if (button == DialogButton.OK && files.length > 0) {
+				graph.data = GraphSerializer.loadScene(files[0].fullPath);
+				history.clear();
+				notify(GraphChanged);
+				notify(WorkspaceChanged);
+			}
+		}, {
+			readContents: true,
+			title: "Open",
+			readAsBinary: true,
+			multiple: false,
+			extensions: [{label: "Bark Dialogye Scene File", extension: "woof"}]
+		});
 	}
 
-	public function saveScene(path:String = "graph.json") {
-		GraphSerializer.save(path, graph.data);
+	public function saveScene() {
+		var data = GraphSerializer.save(graph.data);
+
+		Dialogs.saveFile(function(button, success, path) {
+			if (button == DialogButton.OK && success && path != null) {
+				// write data to the path the user actually chose
+				#if nodejs
+				Fs.writeFileSync(path, data);
+				#elseif js
+				// On web, saveFile usually triggers a browser download automatically
+				// but if you need manual storage:
+				Browser.window.localStorage.setItem(path, data);
+				#else
+				File.saveContent(path, data);
+				#end
+
+				trace("Scene saved to: " + path);
+			}
+		}, {
+			name: '${workspace.activeSceneId}.woof',
+			text: data,
+			isBinary: false
+		}, {
+			// writeAsBinary: false,
+			// extensions: [{label: "bark dialogue file", extension: "bark"}],
+			// title: "save scene file"
+			extensions: [{label: "Bark Scene", extension: "woof"}],
+			title: "Save Scene"
+		});
+	}
+
+	public function exportScene() {
+		var data = GraphSerializer.export(graph.data);
+
+		Dialogs.saveFile(function(button, success, path) {
+			if (button == DialogButton.OK && success && path != null) {
+				// write data to the path the user actually chose
+				#if nodejs
+				Fs.writeFileSync(path, data);
+				#elseif js
+				// On web, saveFile usually triggers a browser download automatically
+				// but if you need manual storage:
+				Browser.window.localStorage.setItem(path, data);
+				#else
+				File.saveContent(path, data);
+				#end
+
+				trace("Scene saved to: " + path);
+			}
+		}, {
+			name: '${workspace.activeSceneId}.json',
+			text: data,
+			isBinary: false
+		}, {
+			// writeAsBinary: false,
+			// extensions: [{label: "bark dialogue file", extension: "bark"}],
+			// title: "save scene file"
+			extensions: [{label: "JSON", extension: "json"}],
+			title: "Export Scene"
+		});
 	}
 
 	public function renameScene(oldId:String, newId:String):Bool {
@@ -268,25 +351,81 @@ class EditorSession implements IEditorSession {
 		notify(WorkspaceChanged);
 	}
 
-	public function loadWorkspace(path:String) {
-		// var data:WorkspaceData = GraphSerializer.load(path);
+	public function loadWorkspace() {
+		Dialogs.openFile(function(button, files) {
+			if (button == DialogButton.OK && files.length > 0) {
+				workspace = GraphSerializer.loadWorkspace(files[0].fullPath);
 
-		// workspace = new Workspace();
-		// for (scene in data.scenes)
-		// 	workspace.addScene(scene);
+				if (workspace.activeSceneId != null)
+					switchScene(workspace.activeSceneId);
 
-		// switchScene(data.activeSceneId);
-		notify(WorkspaceChanged);
-		notify(GraphChanged);
+				history.clear();
+				notify(WorkspaceChanged);
+				notify(GraphChanged);
+			}
+		}, {extensions: [{label: "Bark Workspace", extension: "bark"}]});
 	}
 
-	public function saveWorkspace(?path:String) {
-		// var data:WorkspaceData = {
-		// 	scenes: [for (s in workspace.scenes) s],
-		// 	activeSceneId: workspace.activeSceneId,
-		// 	name:workspace.
-		// };
-		// GraphSerializer.save(path, data);
+	public function saveWorkspace() {
+		// Serialize the whole workspace object into one JSON string
+		var data = GraphSerializer.serializeWorkspace(workspace);
+
+		Dialogs.saveFile(function(button, success, selectedPath) {
+			if (button == DialogButton.OK && success && selectedPath != null) {
+				#if nodejs
+				Fs.writeFileSync(selectedPath, data);
+				#elseif js
+				Browser.window.localStorage.setItem(selectedPath, data);
+				#else
+				File.saveContent(selectedPath, data);
+				#end
+
+				trace("Workspace saved to: " + selectedPath);
+			}
+		}, {
+			name: '${workspace.name}.bark',
+			text: data,
+			isBinary: false
+		}, {
+			extensions: [{label: "Bark Workspace", extension: "bark"}],
+			title: "Save Workspace"
+		});
+	}
+
+	public function exportWorkspace() {
+		var exportMap = GraphSerializer.getExportFiles(workspace);
+
+		// Ask user where the main manifest file should go
+		Dialogs.saveFile(function(button, success, path) {
+			if (button == DialogButton.OK && success && path != null) {
+				#if (sys || nodejs)
+				var dir = haxe.io.Path.directory(path);
+
+				for (fileName => content in exportMap) {
+					var fullPath = haxe.io.Path.join([dir, fileName]);
+					#if nodejs
+					Fs.writeFileSync(fullPath, content);
+					#else
+					File.saveContent(fullPath, content);
+					#end
+				}
+
+				var manifest = GraphSerializer.exportWorkspace(workspace);
+				#if nodejs
+				Fs.writeFileSync(path, manifest);
+				#else
+				File.saveContent(path, manifest);
+				#end
+				#end
+			}
+		}, {
+			name: '${workspace.name}.json',
+			text: "",
+			isBinary: false
+		}, {
+			title: "Select Export Location (Manifest File)",
+			extensions: [{label: "JSON Export", extension: "json"}]
+		});
 	}
 
 	public function addSchemaToWorkspace(n:NodeGroupSchema) {
@@ -301,10 +440,31 @@ class EditorSession implements IEditorSession {
 	}
 
 	public function duplicateScene(id:String) {
+		var sourceScene = workspace.scenes.get(id);
+		if (sourceScene == null)
+			return;
+
+		// deep copy using Json serialization
+		var copyString = haxe.Json.stringify(sourceScene);
+		var sceneCopy:SceneData = haxe.Json.parse(copyString);
+
+		// unique ID (e.g., "SceneName_copy")
+		var newId = id + "_copy";
+		var counter = 1;
+		while (workspace.scenes.exists(newId)) {
+			newId = id + "_copy_" + counter;
+			counter++;
+		}
+
+		sceneCopy.id = newId;
+		workspace.addScene(sceneCopy);
+
+		switchScene(newId);
 		notify(WorkspaceChanged);
 	}
 
-	public function deleteScene(path:String) {
+	public function deleteScene(id:String) {
+		workspace.removeScene(id);
 		notify(WorkspaceChanged);
 	}
 

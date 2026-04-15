@@ -113,6 +113,13 @@ class CanvasGraphSync {
 
 				if (fromNode != null && toNode != null) {
 					cv = new ConnectionView(fromNode, toNode, connData);
+					
+					cv.onRequestContextMenu = (c, e) -> {
+					if (canvas.onRequestConnectionContextMenu != null) {
+						canvas.onRequestConnectionContextMenu(c, e);
+					}
+				}
+
 					canvas.connections.push(cv);
 					canvas.edgeLayer.addComponent(cv);
 				} else {}

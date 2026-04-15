@@ -36,7 +36,8 @@ class WorkspaceUtils {
 			fromNode: c.fromNode,
 			toNode: c.toNode,
 			fromPort: c.fromPort,
-			toPort: c.toPort
+			toPort: c.toPort,
+			fields: c.fields
 		};
 	}
 
@@ -197,12 +198,41 @@ class WorkspaceUtils {
 			var fromPort = portKeyMap.get(fromNodeId).get(e.fromHandle);
 			var toPort = portKeyMap.get(toNodeId).get(e.toHandle);
 
+			var fields:Array<NodeField> = [];
+
+			if (e.fields != null) {
+				for (f in e.fields) {
+					var field:NodeField = {
+						key: f.key,
+						type: f.type,
+						value: f.value,
+						portId: null
+					};
+
+					// TODO: skip this 
+					// if (f.type == "data") {
+					// 	var pid = GUID.uuid();
+					// 	// ports.push({
+					// 	// 	id: pid,
+					// 	// 	name: f.key,
+					// 	// 	direction: Output,
+					// 	// 	isMain: false
+					// 	// });
+					// 	field.portId = pid;
+					// 	keyToPort.set(f.key, pid);
+					// }
+
+					fields.push(field);
+				}
+			}
+
 			connections.push({
 				id: GUID.uuid(),
 				fromNode: fromNodeId,
 				toNode: toNodeId,
 				fromPort: fromPort,
-				toPort: toPort
+				toPort: toPort,
+				fields: fields
 			});
 		}
 

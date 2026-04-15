@@ -15,6 +15,10 @@ class SceneMenu extends Menu {
 	public var onRequestDuplicateScene:(String) -> Void;
 	public var onRequestDeleteScene:(String) -> Void;
 
+	public var onRequestOpenScene:() -> Void;
+	public var onRequestSaveScene:() -> Void;
+	public var onRequestExportScene:() -> Void;
+
 	public var onRequestGetActiveScene:() -> SceneData;
 	public var onRequestGetWorkspaceScenes:() -> Array<SceneData>;
 	public var onRequestRenameScene:(String, String) -> Void;
@@ -29,8 +33,8 @@ class SceneMenu extends Menu {
 		addComponent(duplicateSceneItem());
 		addComponent(openSceneItem());
 		addComponent(saveSceneItem());
-		addComponent(deleteSceneItem());
 		addComponent(exportSceneItem());
+		addComponent(deleteSceneItem());
 	}
 
 	function newSceneItem():MenuItem {
@@ -86,17 +90,11 @@ class SceneMenu extends Menu {
 	function openSceneItem():MenuItem {
 		var item = new MenuItem();
 		item.text = "Open";
-		item.onClick = _ -> Dialogs.openFile(function(button, selectedFile) {
-			if (button == DialogButton.OK) {
-				trace(selectedFile);
+		item.onClick = _ -> {
+			if (onRequestOpenScene != null) {
+				onRequestOpenScene();
 			}
-		}, {
-			readContents: true,
-			title: "Open",
-			readAsBinary: true,
-			multiple: false,
-			extensions: [{label: "bark dialogue file", extension: "bark"}]
-		});
+		}
 		return item;
 	}
 
@@ -104,20 +102,20 @@ class SceneMenu extends Menu {
 		var item = new MenuItem();
 		item.text = "Save";
 		item.onClick = _ -> {
-			Dialogs.saveFile(function(button, success, path) {
-				if (button == DialogButton.OK && success) {
-					trace(path);
-				}
-			}, {
-				name: "filename",
-				text: "",
-				bytes: null,
-				isBinary: false
-			}, {
-				writeAsBinary: false,
-				extensions: [{label: "bark dialogue file", extension: "bark"}],
-				title: "save scene file"
-			});
+			if (onRequestSaveScene != null) {
+				onRequestSaveScene();
+			}
+		};
+		return item;
+	}
+
+	function exportSceneItem():MenuItem {
+		var item = new MenuItem();
+		item.text = "Export";
+		item.onClick = _ -> {
+			if (onRequestExportScene != null) {
+				onRequestExportScene();
+			}
 		};
 		return item;
 	}
@@ -144,28 +142,6 @@ class SceneMenu extends Menu {
 				if (button == DialogButton.OK) {
 					onRequestDeleteScene(sceneId);
 				}
-			});
-		};
-		return item;
-	}
-
-	function exportSceneItem():MenuItem {
-		var item = new MenuItem();
-		item.text = "Export";
-		item.onClick = _ -> {
-			Dialogs.saveFile(function(button, success, path) {
-				if (button == DialogButton.OK && success) {
-					trace(path);
-				}
-			}, {
-				name: "filename",
-				text: "",
-				bytes: null,
-				isBinary: false
-			}, {
-				writeAsBinary: false,
-				extensions: [{label: "bark dialogue file", extension: "bark"}],
-				title: "save scene file"
 			});
 		};
 		return item;

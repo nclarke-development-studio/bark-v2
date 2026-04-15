@@ -62,8 +62,10 @@ class PortView extends HBox {
 	// @:bind(this, MouseEvent.MOUSE_UP)
 	private function endDragConnection(e:MouseEvent):Void {
 		e.cancel();
-		if (data.direction != PortDirection.Input)
+		if (data.direction != PortDirection.Input){
+			onConnectionFinish(null, e);
 			return;
+		}
 		var result = "";
 		if (onConnectionFinish != null)
 			result = onConnectionFinish(this, e);

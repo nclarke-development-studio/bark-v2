@@ -1,5 +1,6 @@
 package util;
 
+import data.ConnectionData;
 import haxe.ds.Map;
 import ui.nodes.NodeView;
 import ui.connections.ConnectionView;

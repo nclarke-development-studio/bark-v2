@@ -25,6 +25,8 @@ class ConnectionView extends Canvas {
 
 	var midButton:Button;
 
+	public var onRequestContextMenu:(c:ConnectionData, e:MouseEvent) -> Void;
+
 	public function new(fromNode:NodeView, toNode:NodeView, data:ConnectionData) {
 		super();
 		this.fromNode = fromNode;
@@ -42,6 +44,13 @@ class ConnectionView extends Canvas {
 		midButton.onClick = function(_) {
 			fromNode.removeConnection(data);
 		};
+
+		midButton.onRightClick = e -> {
+			e.cancel();
+			if(onRequestContextMenu != null){
+				onRequestContextMenu(this.data, e);
+			}
+		}
 
 		addComponent(midButton);
 	}

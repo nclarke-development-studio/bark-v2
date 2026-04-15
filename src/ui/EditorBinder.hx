@@ -1,5 +1,6 @@
 package ui;
 
+import ui.menus.ConnectionContextMenu;
 import ui.menus.SelectionRectContextMenu;
 import ui.menus.NodeContextMenu;
 import ui.menus.GraphContextMenu;
@@ -55,6 +56,13 @@ class EditorBinder {
 				menu.show();
 			}
 
+			canvas.onRequestConnectionContextMenu = (connection, e) -> {
+				var menu = new ConnectionContextMenu(connection, session, canvas);
+				menu.left = e.screenX;
+				menu.top = e.screenY;
+				menu.show();
+			}
+
 			canvas.onRequestSelectionContextMenu = (c, e) -> {
 				var menu = new SelectionRectContextMenu(c, session);
 				menu.left = e.screenX;
@@ -93,6 +101,9 @@ class EditorBinder {
 			toolbar.onRequestSwitchScene = session.switchScene;
 			toolbar.onRequestDuplicateScene = session.duplicateScene;
 			toolbar.onRequestDeleteScene = session.deleteScene;
+			toolbar.onRequestSaveScene = session.saveScene;
+			toolbar.onRequestExportScene = session.exportScene;
+			toolbar.onRequestOpenScene = session.loadScene;
 
 			toolbar.onRequestGetActiveScene = session.getActiveScene;
 			toolbar.onRequestGetWorkspaceScenes = session.getWorkspaceScenes;
@@ -101,6 +112,9 @@ class EditorBinder {
 			toolbar.onRequestCreateWorkspace = session.createWorkspace;
 			toolbar.onRequestGetWorkspaceName = session.getWorkspaceName;
 			toolbar.onRequestRenameWorkspace = session.renameWorkspace;
+			toolbar.onRequestSaveWorkspace = session.saveWorkspace;
+			toolbar.onRequestExportWorkspace = session.saveWorkspace;
+			toolbar.onRequestOpenWorkspace = session.loadWorkspace;
 
 			toolbar.init();
 		}

@@ -36,6 +36,7 @@ typedef SchemaEdge = {
 	var toHandle:String;
 	var from:Int;
 	var to:Int;
+	var ?fields:Array<SchemaField>;
 }
 
 typedef NodeGroupSchema = {

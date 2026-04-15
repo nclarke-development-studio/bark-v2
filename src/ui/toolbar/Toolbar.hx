@@ -13,6 +13,10 @@ class Toolbar extends MenuBar {
 	public var onRequestDuplicateScene:(String) -> Void;
 	public var onRequestDeleteScene:(String) -> Void;
 
+	public var onRequestOpenScene:() -> Void;
+	public var onRequestSaveScene:() -> Void;
+	public var onRequestExportScene:() -> Void;
+
 	public var onRequestGetActiveScene:() -> SceneData;
 	public var onRequestGetWorkspaceScenes:() -> Array<SceneData>;
 	public var onRequestRenameScene:(String, String) -> Void;
@@ -20,6 +24,9 @@ class Toolbar extends MenuBar {
 	public var onRequestCreateWorkspace:(String) -> Void;
 	public var onRequestGetWorkspaceName:() -> String;
 	public var onRequestRenameWorkspace:(String) -> Void;
+	public var onRequestSaveWorkspace:() -> Void;
+	public var onRequestOpenWorkspace:() -> Void;
+	public var onRequestExportWorkspace:() -> Void;
 
 	var workspaceM:WorkspaceMenu;
 	var sceneM:SceneMenu;
@@ -37,6 +44,9 @@ class Toolbar extends MenuBar {
 		sceneM.onRequestSwitchScene = onRequestSwitchScene;
 		sceneM.onRequestDuplicateScene = onRequestDuplicateScene;
 		sceneM.onRequestDeleteScene = onRequestDeleteScene;
+		sceneM.onRequestSaveScene = onRequestSaveScene;
+		sceneM.onRequestExportScene = onRequestExportScene;
+		sceneM.onRequestOpenScene = onRequestOpenScene;
 
 		sceneM.onRequestGetActiveScene = onRequestGetActiveScene;
 		sceneM.onRequestGetWorkspaceScenes = onRequestGetWorkspaceScenes;
@@ -45,6 +55,9 @@ class Toolbar extends MenuBar {
 		workspaceM.onRequestCreateWorkspace = onRequestCreateWorkspace;
 		workspaceM.onRequestGetWorkspaceName = onRequestGetWorkspaceName;
 		workspaceM.onRequestRenameWorkspace = onRequestRenameWorkspace;
+		workspaceM.onRequestSaveWorkspace = onRequestSaveWorkspace;
+		workspaceM.onRequestExportWorkspace = onRequestExportWorkspace;
+		workspaceM.onRequestOpenWorkspace = onRequestOpenWorkspace;
 
 		addComponent(workspaceM);
 		addComponent(sceneM);

@@ -57,6 +57,7 @@ class NodeCanvas extends Absolute {
 	// callbacks
 	public var onRequestCanvasContextMenu:(NodeCanvas, MouseEvent) -> Void;
 	public var onRequestNodeContextMenu:(NodeView, MouseEvent) -> Void;
+	public var onRequestConnectionContextMenu:(ConnectionData, MouseEvent) -> Void;
 	public var onRequestNodeCreate:(node:NodeGroupSchema, x:Float, y:Float) -> Array<NodeData>;
 	public var onRequestSelectionContextMenu:(NodeCanvas, MouseEvent) -> Void;
 	public var onRemoveConnection:(ConnectionData) -> Void;
@@ -270,6 +271,10 @@ class NodeCanvas extends Absolute {
 
 	// Finishing a connection
 	public function finishConnection(to:PortView) {
+		if (to == null) {
+			cancelPreview();
+			return '';
+		}
 		return connectionPreview.finishConnection(to);
 	}
 

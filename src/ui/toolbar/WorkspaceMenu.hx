@@ -11,6 +11,10 @@ class WorkspaceMenu extends Menu {
 	public var onRequestGetWorkspaceName:() -> String;
 	public var onRequestRenameWorkspace:(String) -> Void;
 
+	public var onRequestOpenWorkspace:() -> Void;
+	public var onRequestSaveWorkspace:() -> Void;
+	public var onRequestExportWorkspace:() -> Void;
+
 	public function new() {
 		super();
 
@@ -18,8 +22,8 @@ class WorkspaceMenu extends Menu {
 
 		addComponent(newMenuItem());
 		addComponent(openMenuItem());
-		addComponent(saveMenuItem());
 		addComponent(editMenuItem());
+		addComponent(saveMenuItem());
 		addComponent(exportMenuItem());
 	}
 
@@ -40,39 +44,11 @@ class WorkspaceMenu extends Menu {
 	function openMenuItem():MenuItem {
 		var item = new MenuItem();
 		item.text = "Open";
-		item.onClick = _ -> Dialogs.openFile(function(button, selectedFile) {
-			if (button == DialogButton.OK) {
-				trace(selectedFile);
-			}
-		}, {
-			readContents: true,
-			title: "Open Workspace File",
-			readAsBinary: true,
-			multiple: false,
-			extensions: [{label: "bark dialogue project", extension: "bark"}]
-		});
-		return item;
-	}
-
-	function saveMenuItem():MenuItem {
-		var item = new MenuItem();
-		item.text = "Save";
 		item.onClick = _ -> {
-			Dialogs.saveFile(function(button, success, path) {
-				if (button == DialogButton.OK && success) {
-					trace(path);
-				}
-			}, {
-				name: "filename",
-				text: "",
-				bytes: null,
-				isBinary: false
-			}, {
-				writeAsBinary: false,
-				extensions: [{label: "bark workspace file", extension: "bark"}],
-				title: "save workspace file"
-			});
-		};
+			if (onRequestOpenWorkspace != null) {
+				onRequestOpenWorkspace();
+			}
+		}
 		return item;
 	}
 
@@ -88,29 +64,28 @@ class WorkspaceMenu extends Menu {
 		return item;
 	}
 
+	function saveMenuItem():MenuItem {
+		var item = new MenuItem();
+		item.text = "Save";
+		item.onClick = _ -> {
+			if (onRequestSaveWorkspace != null) {
+				onRequestSaveWorkspace();
+			}
+		};
+		return item;
+	}
+
 	function exportMenuItem():MenuItem {
 		var item = new MenuItem();
 		item.text = "Export";
 		item.onClick = _ -> {
-			Dialogs.saveFile(function(button, success, path) {
-				if (button == DialogButton.OK && success) {
-					trace(path);
-				}
-			}, {
-				name: "filename",
-				text: "",
-				bytes: null,
-				isBinary: false
-			}, {
-				writeAsBinary: false,
-				extensions: [{label: "bark dialogue file", extension: "bark"}],
-				title: "export workspace"
-			});
+			if (onRequestExportWorkspace != null) {
+				onRequestExportWorkspace();
+			}
 		};
 		return item;
 	}
 
 	// public function rebuild(w:Workspace) {
-
 	// }
 }
