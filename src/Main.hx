@@ -1,5 +1,8 @@
 package;
 
+import haxe.ui.events.KeyboardEvent;
+import haxe.ui.events.KeyboardEvent;
+import util.KeyCodes;
 import ui.nodes.NodeFactory;
 import ui.EditorBinder;
 import core.EditorSession;
@@ -51,6 +54,15 @@ class Main {
 				root.addComponent(mainHBox);
 
 				app.addComponent(root);
+
+				haxe.ui.core.Screen.instance.registerEvent(KeyboardEvent.KEY_DOWN, (e:KeyboardEvent) -> {
+					switch (e.keyCode) {
+						case KeyCodes.S:
+							if (e.ctrlKey) {
+								session.saveWorkspace();
+							}
+					}
+				});
 
 				app.start();
 			});

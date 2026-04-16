@@ -1,6 +1,11 @@
 package ui.canvas;
 
-import haxe.ui.core.Component;
+import haxe.ui.core.Screen;
+import haxe.ui.components.TextArea;
+import haxe.ui.components.TextField;
+import util.KeyCodes;
+import haxe.ui.focus.FocusManager;
+import haxe.ui.events.KeyboardEvent;
 import ui.canvas.MiniMap;
 import data.PortData;
 import data.NodeData;
@@ -55,11 +60,18 @@ class NodeCanvas extends Absolute {
 	public var graphSync:CanvasGraphSync;
 
 	// callbacks
-	public var onRequestCanvasContextMenu:(NodeCanvas, MouseEvent) -> Void;
-	public var onRequestNodeContextMenu:(NodeView, MouseEvent) -> Void;
-	public var onRequestConnectionContextMenu:(ConnectionData, MouseEvent) -> Void;
+	public var onRequestCanvasContextMenu:(NodeCanvas, x:Float, y:Float) -> Void;
+	public var onRequestNodeContextMenu:(NodeView, x:Float, y:Float) -> Void;
+	public var onRequestConnectionContextMenu:(ConnectionData, x:Float, y:Float) -> Void;
+	public var onRequestSelectionContextMenu:(NodeCanvas, x:Float, y:Float) -> Void;
+
 	public var onRequestNodeCreate:(node:NodeGroupSchema, x:Float, y:Float) -> Array<NodeData>;
-	public var onRequestSelectionContextMenu:(NodeCanvas, MouseEvent) -> Void;
+	public var onRequestNodesDelete:(Array<NodeView>) -> Void;
+
+	public var onRequestUndo:() -> Void;
+	public var onRequestRedo:() -> Void;
+	public var onRequestSave:() -> Void;
+
 	public var onRemoveConnection:(ConnectionData) -> Void;
 	public var connectPorts:(NodeData, PortData, NodeData, PortData) -> ConnectionData;
 
@@ -151,10 +163,61 @@ class NodeCanvas extends Absolute {
 		});
 	}
 
-	function registerMouseEvents() {
+	public function registerMouseEvents() {
 		registerEvent(MouseEvent.RIGHT_CLICK, e -> {
 			if (onRequestCanvasContextMenu != null) {
-				onRequestCanvasContextMenu(this, e);
+				onRequestCanvasContextMenu(this, e.screenX, e.screenY);
+			}
+		});
+
+		// since absolute doesn't seem to take keyboard events
+		haxe.ui.core.Screen.instance.registerEvent(KeyboardEvent.KEY_DOWN, (e:KeyboardEvent) -> {
+			// to determine if this is the active node canvas
+			var top = haxe.ui.core.Screen.instance.topComponent;
+
+			if (top != null && !top.containsComponent(this) && top != this) {
+				return;
+			}
+
+			var currentFocus = FocusManager.instance.focus;
+
+			// if something is focused, and it's a text input, ignore the shortcut unless it's a save or something
+			if (currentFocus != null) {
+				if (Std.isOfType(currentFocus, TextField) || Std.isOfType(currentFocus, TextArea)) {
+					return;
+				}
+			}
+
+			e.cancel();
+
+			switch (e.keyCode) {
+				case KeyCodes.A:
+					var mouseX = Screen.instance.currentMouseX;
+					var mouseY = Screen.instance.currentMouseY;
+					onRequestCanvasContextMenu(this, mouseX, mouseY);
+
+				case KeyCodes.S:
+					if (e.ctrlKey) {
+						if (onRequestSave != null) {
+							onRequestSave();
+						}
+					}
+				case KeyCodes.Z:
+					if (e.ctrlKey) {
+						if (onRequestUndo != null) {
+							onRequestUndo();
+						}
+					}
+
+				case KeyCodes.Y:
+					if (e.ctrlKey) {
+						if (onRequestRedo != null) {
+							onRequestRedo();
+						}
+					}
+
+				case KeyCodes.DELETE:
+					onRequestNodesDelete(selectedNodes);
 			}
 		});
 	}

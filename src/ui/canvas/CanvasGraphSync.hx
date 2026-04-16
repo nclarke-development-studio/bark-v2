@@ -49,9 +49,9 @@ class CanvasGraphSync {
 					canvas.nodeMouseDown(e, n);
 				}
 
-				nv.onRequestContextMenu = (n, e) -> {
+				nv.onRequestContextMenu = (n, x, y) -> {
 					if (canvas.onRequestNodeContextMenu != null) {
-						canvas.onRequestNodeContextMenu(n, e);
+						canvas.onRequestNodeContextMenu(n, x, y);
 					}
 				}
 
@@ -114,9 +114,9 @@ class CanvasGraphSync {
 				if (fromNode != null && toNode != null) {
 					cv = new ConnectionView(fromNode, toNode, connData);
 					
-					cv.onRequestContextMenu = (c, e) -> {
+					cv.onRequestContextMenu = (c, x, y) -> {
 					if (canvas.onRequestConnectionContextMenu != null) {
-						canvas.onRequestConnectionContextMenu(c, e);
+						canvas.onRequestConnectionContextMenu(c, x, y);
 					}
 				}
 

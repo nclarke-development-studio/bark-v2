@@ -1,5 +1,7 @@
 package core;
 
+import ui.palette.schema.SchemaEditor;
+import core.commands.RemoveNodesCommand;
 import haxe.Json;
 import haxe.ui.containers.dialogs.Dialog.DialogButton;
 import haxe.ui.containers.dialogs.Dialogs;
@@ -64,6 +66,9 @@ interface IEditorSession {
 
 	function addSchemaToWorkspace(n:NodeGroupSchema):Void;
 	function removeSchemaFromWorkspace(id:String):Void;
+
+	function enterSchemaEditMode():Void;
+	function exitSchemaEditMode():Void;
 }
 
 enum EditorChange {
@@ -75,6 +80,10 @@ class EditorSession implements IEditorSession {
 	public var graph:Graph;
 	public var history:History;
 	public var workspace:Workspace;
+
+	// TODO:
+	// file path for the workspace
+	public var filePath:String = null;
 
 	public var onChanged:(EditorChange) -> Void;
 
@@ -138,10 +147,19 @@ class EditorSession implements IEditorSession {
 		notify(GraphChanged);
 	}
 
+	// bulk node removal
 	public function removeNodes(ids:Array<String>) {
+		var nodes = [];
 		for (id in ids) {
-			removeNode(id);
+			var node = graph.getNode(id);
+			if (node == null) {
+				continue;
+			}
+			nodes.push(node);
 		}
+		var cmd = new RemoveNodesCommand(graph, nodes);
+		history.execute(cmd);
+		notify(GraphChanged);
 	}
 
 	public function duplicateNode(d:NodeData) {
@@ -338,6 +356,7 @@ class EditorSession implements IEditorSession {
 	// workspace ==============================================
 
 	public function createWorkspace(name:String) {
+		filePath = null;
 		workspace = new Workspace(name);
 		createScene("default");
 		switchScene("default");
@@ -356,6 +375,8 @@ class EditorSession implements IEditorSession {
 			if (button == DialogButton.OK && files.length > 0) {
 				workspace = GraphSerializer.loadWorkspace(files[0].fullPath);
 
+				filePath = files[0].fullPath;
+
 				if (workspace.activeSceneId != null)
 					switchScene(workspace.activeSceneId);
 
@@ -370,8 +391,50 @@ class EditorSession implements IEditorSession {
 		// Serialize the whole workspace object into one JSON string
 		var data = GraphSerializer.serializeWorkspace(workspace);
 
+		if (filePath != null) {
+			#if nodejs
+			Fs.writeFileSync(filePath, data);
+			#elseif js
+			Browser.window.localStorage.setItem(filePath, data);
+			#else
+			File.saveContent(filePath, data);
+			#end
+
+			trace("Workspace saved to: " + filePath);
+
+			return;
+		}
+
 		Dialogs.saveFile(function(button, success, selectedPath) {
 			if (button == DialogButton.OK && success && selectedPath != null) {
+				filePath = selectedPath;
+				#if nodejs
+				Fs.writeFileSync(selectedPath, data);
+				#elseif js
+				Browser.window.localStorage.setItem(selectedPath, data);
+				#else
+				File.saveContent(selectedPath, data);
+				#end
+
+				trace("Workspace saved to: " + selectedPath);
+			}
+		}, {
+			name: '${workspace.name}.bark',
+			text: data,
+			isBinary: false
+		}, {
+			extensions: [{label: "Bark Workspace", extension: "bark"}],
+			title: "Save Workspace"
+		});
+	}
+
+	public function saveAsWorkspace() {
+		// Serialize the whole workspace object into one JSON string
+		var data = GraphSerializer.serializeWorkspace(workspace);
+
+		Dialogs.saveFile(function(button, success, selectedPath) {
+			if (button == DialogButton.OK && success && selectedPath != null) {
+				filePath = selectedPath;
 				#if nodejs
 				Fs.writeFileSync(selectedPath, data);
 				#elseif js
@@ -487,4 +550,13 @@ class EditorSession implements IEditorSession {
 	public function getActiveScene():SceneData {
 		return workspace.scenes[workspace.activeSceneId];
 	}
+
+	public function enterSchemaEditMode() {
+		var dialog = new SchemaEditor(workspace, null, (schema) -> {
+			addSchemaToWorkspace(schema);
+		});
+		dialog.showDialog();
+	}
+
+	public function exitSchemaEditMode() {}
 }

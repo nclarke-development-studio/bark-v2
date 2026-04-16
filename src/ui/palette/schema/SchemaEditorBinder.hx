@@ -1,5 +1,7 @@
 package ui.palette.schema;
 
+import ui.menus.ConnectionContextMenu;
+import ui.nodes.NodeView;
 import data.NodeData.NodeGroupSchema;
 import ui.palette.schema.menus.SelectionRectContextMenu;
 import ui.palette.schema.menus.NodeContextMenu;
@@ -13,6 +15,11 @@ class SchemaEditorBinder {
 	var palette:SchemaEditorPalette;
 	var schema:NodeGroupSchema;
 	var close:(NodeGroupSchema) -> Void;
+
+	var canvasContextMenu:GraphContextMenu;
+	var nodeContextMenu:NodeContextMenu;
+	var connectionContextMenu:ConnectionContextMenu;
+	var selectionContextMenu:SelectionRectContextMenu;
 
 	public function new(s:EditorSession, ?c:NodeCanvas, ?p:SchemaEditorPalette, ?schema:NodeGroupSchema, ?close:(NodeGroupSchema) -> Void) {
 		session = s;
@@ -40,25 +47,49 @@ class SchemaEditorBinder {
 	function init() {
 		if (canvas != null) {
 			// canvas binding
-			canvas.onRequestCanvasContextMenu = (canvas, e) -> {
-				var menu = new GraphContextMenu(canvas, session, schema, close);
-				menu.left = e.screenX;
-				menu.top = e.screenY;
-				menu.show();
+			canvas.onRequestCanvasContextMenu = (canvas, x, y) -> {
+				if (canvasContextMenu != null) {
+					canvasContextMenu.hide();
+				}
+				canvasContextMenu = new GraphContextMenu(canvas, session, schema, close);
+				canvasContextMenu.left = x;
+				canvasContextMenu.top = y;
+				canvasContextMenu.show();
 			};
 
-			canvas.onRequestNodeContextMenu = (canvas, e) -> {
-				var menu = new NodeContextMenu(canvas, session);
-				menu.left = e.screenX;
-				menu.top = e.screenY;
-				menu.show();
+			canvas.onRequestNodeContextMenu = (canvas, x, y) -> {
+				if (nodeContextMenu != null) {
+					nodeContextMenu.hide();
+				}
+				nodeContextMenu = new NodeContextMenu(canvas, session);
+				nodeContextMenu.left = x;
+				nodeContextMenu.top = y;
+				nodeContextMenu.show();
 			}
 
-			canvas.onRequestSelectionContextMenu = (c, e) -> {
-				var menu = new SelectionRectContextMenu(c, session);
-				menu.left = e.screenX;
-				menu.top = e.screenY;
-				menu.show();
+			canvas.onRequestConnectionContextMenu = (connection, x, y) -> {
+				if (connectionContextMenu != null) {
+					connectionContextMenu.hide();
+				}
+				connectionContextMenu = new ConnectionContextMenu(connection, session, canvas);
+				connectionContextMenu.left = x;
+				connectionContextMenu.top = y;
+				connectionContextMenu.show();
+			}
+
+			canvas.onRequestSelectionContextMenu = (c, x, y) -> {
+				if (selectionContextMenu != null) {
+					selectionContextMenu.hide();
+				}
+				selectionContextMenu = new SelectionRectContextMenu(c, session);
+				selectionContextMenu.left = x;
+				selectionContextMenu.top = y;
+				selectionContextMenu.show();
+			}
+
+			canvas.onRequestNodesDelete = (nodes:Array<NodeView>) -> {
+				var ids = nodes.map(n -> n.data.id);
+				session.removeNodes(ids);
 			}
 
 			canvas.onRemoveConnection = (c) -> {
@@ -80,7 +111,17 @@ class SchemaEditorBinder {
 				return nodes;
 			}
 
+			canvas.onRequestUndo = () -> {
+				session.undo();
+			}
+
+			canvas.onRequestRedo = () -> {
+				session.redo();
+			}
+
 			canvas.connectPorts = session.connectPorts;
+
+			canvas.init();
 		}
 
 		if (palette != null) {

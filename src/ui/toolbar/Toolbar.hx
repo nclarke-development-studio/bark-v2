@@ -25,6 +25,7 @@ class Toolbar extends MenuBar {
 	public var onRequestGetWorkspaceName:() -> String;
 	public var onRequestRenameWorkspace:(String) -> Void;
 	public var onRequestSaveWorkspace:() -> Void;
+	public var onRequestSaveAsWorkspace:() -> Void;
 	public var onRequestOpenWorkspace:() -> Void;
 	public var onRequestExportWorkspace:() -> Void;
 
@@ -56,6 +57,7 @@ class Toolbar extends MenuBar {
 		workspaceM.onRequestGetWorkspaceName = onRequestGetWorkspaceName;
 		workspaceM.onRequestRenameWorkspace = onRequestRenameWorkspace;
 		workspaceM.onRequestSaveWorkspace = onRequestSaveWorkspace;
+		workspaceM.onRequestSaveAsWorkspace = onRequestSaveAsWorkspace;
 		workspaceM.onRequestExportWorkspace = onRequestExportWorkspace;
 		workspaceM.onRequestOpenWorkspace = onRequestOpenWorkspace;
 

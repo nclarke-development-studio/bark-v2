@@ -25,10 +25,9 @@ class NodePalette extends VBox {
 
 	public var onNodeDrop:(nodeGroup:NodeGroupSchema, x:Float, y:Float) -> Void;
 	public var onSchemaCreate:(NodeGroupSchema) -> Void;
+	public var onRequestSchemaMode:() -> Void;
 
 	var builtInSchemas:Array<NodeGroupSchema> = [];
-
-	// var workspaceSchemas:Array<NodeGroupSchema> = [];
 
 	public function new(show:Bool = true) {
 		super();
@@ -80,8 +79,9 @@ class NodePalette extends VBox {
 			var addBtn = new Button();
 			addBtn.text = "+ Create Node";
 			addBtn.onClick = _ -> {
-				var dialog = new SchemaEditor(workspace, null, (schema) -> if (onSchemaCreate != null) onSchemaCreate(schema));
-				dialog.showDialog();
+				if(onRequestSchemaMode != null){
+					onRequestSchemaMode();
+				}
 			};
 			customContainer.addComponent(addBtn);
 		}

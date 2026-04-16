@@ -13,6 +13,7 @@ class WorkspaceMenu extends Menu {
 
 	public var onRequestOpenWorkspace:() -> Void;
 	public var onRequestSaveWorkspace:() -> Void;
+	public var onRequestSaveAsWorkspace:() -> Void;
 	public var onRequestExportWorkspace:() -> Void;
 
 	public function new() {
@@ -24,6 +25,7 @@ class WorkspaceMenu extends Menu {
 		addComponent(openMenuItem());
 		addComponent(editMenuItem());
 		addComponent(saveMenuItem());
+		addComponent(saveAsMenuItem());
 		addComponent(exportMenuItem());
 	}
 
@@ -70,6 +72,17 @@ class WorkspaceMenu extends Menu {
 		item.onClick = _ -> {
 			if (onRequestSaveWorkspace != null) {
 				onRequestSaveWorkspace();
+			}
+		};
+		return item;
+	}
+
+	function saveAsMenuItem():MenuItem {
+		var item = new MenuItem();
+		item.text = "Save As...";
+		item.onClick = _ -> {
+			if (onRequestSaveAsWorkspace != null) {
+				onRequestSaveAsWorkspace();
 			}
 		};
 		return item;

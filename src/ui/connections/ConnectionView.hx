@@ -25,7 +25,7 @@ class ConnectionView extends Canvas {
 
 	var midButton:Button;
 
-	public var onRequestContextMenu:(c:ConnectionData, e:MouseEvent) -> Void;
+	public var onRequestContextMenu:(c:ConnectionData, x:Float, y:Float) -> Void;
 
 	public function new(fromNode:NodeView, toNode:NodeView, data:ConnectionData) {
 		super();
@@ -48,7 +48,7 @@ class ConnectionView extends Canvas {
 		midButton.onRightClick = e -> {
 			e.cancel();
 			if(onRequestContextMenu != null){
-				onRequestContextMenu(this.data, e);
+				onRequestContextMenu(this.data, e.screenX, e.screenY);
 			}
 		}
 

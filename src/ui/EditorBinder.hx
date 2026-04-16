@@ -1,5 +1,6 @@
 package ui;
 
+import ui.nodes.NodeView;
 import ui.menus.ConnectionContextMenu;
 import ui.menus.SelectionRectContextMenu;
 import ui.menus.NodeContextMenu;
@@ -15,15 +16,16 @@ class EditorBinder {
 	var palette:Palette;
 	var toolbar:Toolbar;
 
+	var canvasContextMenu:GraphContextMenu;
+	var nodeContextMenu:NodeContextMenu;
+	var connectionContextMenu:ConnectionContextMenu;
+	var selectionContextMenu:SelectionRectContextMenu;
+
 	public function new(s:EditorSession, ?c:NodeCanvas, ?p:Palette, ?t:Toolbar) {
 		session = s;
 		canvas = c;
 		palette = p;
 		toolbar = t;
-
-		// canvas.onRequestAddNode = (x, y) -> {
-		// 	session.addNode(makeNodeAt(x, y));
-		// };
 
 		session.onChanged = (change) -> {
 			switch (change) {
@@ -42,32 +44,49 @@ class EditorBinder {
 	function init() {
 		if (canvas != null) {
 			// canvas binding
-			canvas.onRequestCanvasContextMenu = (canvas, e) -> {
-				var menu = new GraphContextMenu(canvas, session);
-				menu.left = e.screenX;
-				menu.top = e.screenY;
-				menu.show();
+			canvas.onRequestCanvasContextMenu = (canvas, x, y) -> {
+				if (canvasContextMenu != null) {
+					canvasContextMenu.hide();
+				}
+				canvasContextMenu = new GraphContextMenu(canvas, session);
+				canvasContextMenu.left = x;
+				canvasContextMenu.top = y;
+				canvasContextMenu.show();
 			};
 
-			canvas.onRequestNodeContextMenu = (node, e) -> {
-				var menu = new NodeContextMenu(node, session, canvas);
-				menu.left = e.screenX;
-				menu.top = e.screenY;
-				menu.show();
+			canvas.onRequestNodeContextMenu = (node, x, y) -> {
+				if (nodeContextMenu != null) {
+					nodeContextMenu.hide();
+				}
+				nodeContextMenu = new NodeContextMenu(node, session, canvas);
+				nodeContextMenu.left = x;
+				nodeContextMenu.top = y;
+				nodeContextMenu.show();
 			}
 
-			canvas.onRequestConnectionContextMenu = (connection, e) -> {
-				var menu = new ConnectionContextMenu(connection, session, canvas);
-				menu.left = e.screenX;
-				menu.top = e.screenY;
-				menu.show();
+			canvas.onRequestConnectionContextMenu = (connection, x, y) -> {
+				if (connectionContextMenu != null) {
+					connectionContextMenu.hide();
+				}
+				connectionContextMenu = new ConnectionContextMenu(connection, session, canvas);
+				connectionContextMenu.left = x;
+				connectionContextMenu.top = y;
+				connectionContextMenu.show();
 			}
 
-			canvas.onRequestSelectionContextMenu = (c, e) -> {
-				var menu = new SelectionRectContextMenu(c, session);
-				menu.left = e.screenX;
-				menu.top = e.screenY;
-				menu.show();
+			canvas.onRequestSelectionContextMenu = (c, x, y) -> {
+				if (selectionContextMenu != null) {
+					selectionContextMenu.hide();
+				}
+				selectionContextMenu = new SelectionRectContextMenu(c, session);
+				selectionContextMenu.left = x;
+				selectionContextMenu.top = y;
+				selectionContextMenu.show();
+			}
+
+			canvas.onRequestNodesDelete = (nodes:Array<NodeView>) -> {
+				var ids = nodes.map(n -> n.data.id);
+				session.removeNodes(ids);
 			}
 
 			canvas.onRemoveConnection = (c) -> {
@@ -87,6 +106,18 @@ class EditorBinder {
 				}
 
 				return nodes;
+			}
+
+			canvas.onRequestUndo = () -> {
+				session.undo();
+			}
+
+			canvas.onRequestRedo = () -> {
+				session.redo();
+			}
+
+			canvas.onRequestSave = () -> {
+				session.saveWorkspace();
 			}
 
 			canvas.connectPorts = session.connectPorts;
@@ -113,7 +144,8 @@ class EditorBinder {
 			toolbar.onRequestGetWorkspaceName = session.getWorkspaceName;
 			toolbar.onRequestRenameWorkspace = session.renameWorkspace;
 			toolbar.onRequestSaveWorkspace = session.saveWorkspace;
-			toolbar.onRequestExportWorkspace = session.saveWorkspace;
+			toolbar.onRequestSaveAsWorkspace = session.saveAsWorkspace;
+			toolbar.onRequestExportWorkspace = session.exportWorkspace;
 			toolbar.onRequestOpenWorkspace = session.loadWorkspace;
 
 			toolbar.init();
@@ -142,6 +174,10 @@ class EditorBinder {
 
 			palette.onRequestSceneSelect = (id) -> {
 				session.switchScene(id);
+			}
+
+			palette.onRequestSchemaMode = () -> {
+				session.enterSchemaEditMode();
 			}
 
 			palette.init();

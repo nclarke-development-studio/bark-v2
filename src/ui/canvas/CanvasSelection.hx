@@ -19,7 +19,7 @@ class CanvasSelection {
 	public var movingSelectedNodes = false;
 
 	// callbacks
-	public var onRequestContextMenu:(c:NodeCanvas, e:MouseEvent) -> Void;
+	public var onRequestContextMenu:(c:NodeCanvas, x:Float, y:Float) -> Void;
 
 	public function new(canvas:NodeCanvas) {
 		this.canvas = canvas;
@@ -32,7 +32,7 @@ class CanvasSelection {
 		selectionArea.onRightClick = function(e:MouseEvent) {
 			e.cancel();
 			if (onRequestContextMenu != null) {
-				onRequestContextMenu(canvas, e);
+				onRequestContextMenu(canvas, e.screenX, e.screenY);
 			}
 		}
 	}
