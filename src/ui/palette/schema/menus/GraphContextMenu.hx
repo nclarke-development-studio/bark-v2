@@ -1,5 +1,6 @@
 package ui.palette.schema.menus;
 
+import ui.components.ContextMenu;
 import data.NodeData.NodeGroupSchema;
 import util.WorkspaceUtils;
 import ui.dialogs.NewSchemaDialog;
@@ -10,13 +11,11 @@ import ui.canvas.NodeCanvas;
 import haxe.ui.containers.menus.Menu;
 import haxe.ui.containers.menus.MenuItem;
 
-class GraphContextMenu extends Menu {
+class GraphContextMenu extends ContextMenu {
 	public function new(canvas:NodeCanvas, session:EditorSession, schema:NodeGroupSchema, ?closeSchemaEditor:(NodeGroupSchema) -> Void) {
 		super();
 
-		var addNodeItem = new MenuItem();
-		addNodeItem.text = "Add Node";
-		addNodeItem.onClick = _ -> {
+		addItem("Add Node", _ -> {
 			var contentX = (canvas.mouseX - canvas.contentLayer.left) / canvas.contentLayer.scaleX;
 			var contentY = (canvas.mouseY - canvas.contentLayer.top) / canvas.contentLayer.scaleY;
 			session.addNode({
@@ -40,13 +39,10 @@ class GraphContextMenu extends Menu {
 				],
 				fields: []
 			});
-		};
-		addComponent(addNodeItem);
+		});
 		//
 
-		var saveItem = new MenuItem();
-		saveItem.text = "Save Schema";
-		saveItem.onClick = _ -> {
+		addItem("Save Schema", _ -> {
 			var dialog = new NewSchemaDialog();
 			if (schema != null) {
 				dialog.schemaNameText = schema.name;
@@ -61,10 +57,9 @@ class GraphContextMenu extends Menu {
 					closeSchemaEditor(newSchema);
 			};
 			dialog.showDialog();
-		};
-		addComponent(saveItem);
-
+		});
 		// var loadItem = new MenuItem();
+
 		// loadItem.text = "Load Graph";
 		// loadItem.onClick = _ -> {
 		// 	session.loadScene();

@@ -4,18 +4,16 @@ import data.PortData.PortDirection;
 import haxe.ui.util.GUID;
 import core.EditorSession;
 import ui.canvas.NodeCanvas;
-import haxe.ui.containers.menus.Menu;
-import haxe.ui.containers.menus.MenuItem;
+import ui.components.ContextMenu;
 
-class GraphContextMenu extends Menu {
+class GraphContextMenu extends ContextMenu {
 	public function new(canvas:NodeCanvas, session:EditorSession) {
 		super();
 
-		var addNodeItem = new MenuItem();
-		addNodeItem.text = "Add Node";
-		addNodeItem.onClick = _ -> {
+		addItem("Add Node", e -> {
 			var contentX = (canvas.mouseX - canvas.contentLayer.left) / canvas.contentLayer.scaleX;
 			var contentY = (canvas.mouseY - canvas.contentLayer.top) / canvas.contentLayer.scaleY;
+
 			session.addNode({
 				id: GUID.uuid(),
 				type: 'basic',
@@ -26,7 +24,7 @@ class GraphContextMenu extends Menu {
 						id: GUID.uuid(),
 						name: 'mainSource',
 						direction: PortDirection.Output,
-						isMain: true,
+						isMain: true
 					},
 					{
 						id: GUID.uuid(),
@@ -37,22 +35,16 @@ class GraphContextMenu extends Menu {
 				],
 				fields: []
 			});
-		};
-		addComponent(addNodeItem);
-		//
+		});
 
-		var saveItem = new MenuItem();
-		saveItem.text = "Save Graph";
-		saveItem.onClick = _ -> {
+		addItem("Save Scene", e -> {
 			session.saveScene();
-		};
-		addComponent(saveItem);
+		});
+	}
 
-		// var loadItem = new MenuItem();
-		// loadItem.text = "Load Graph";
-		// loadItem.onClick = _ -> {
-		// 	session.loadScene();
-		// };
-		// addComponent(loadItem);
+	override function close() {
+		super.close();
+		// Return focus logic here
+		// canvas.focus = true;
 	}
 }

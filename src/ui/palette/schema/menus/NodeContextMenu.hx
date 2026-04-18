@@ -1,28 +1,22 @@
 package ui.palette.schema.menus;
 
+import ui.components.ContextMenu;
 import util.WorkspaceUtils;
 import core.EditorSession;
 import ui.nodes.NodeView;
 import haxe.ui.containers.menus.Menu;
 import haxe.ui.containers.menus.MenuItem;
 
-class NodeContextMenu extends Menu {
+class NodeContextMenu extends ContextMenu {
 	public function new(node:NodeView, session:EditorSession) {
 		super();
 
-		var duplicateItem = new MenuItem();
-		duplicateItem.text = "Duplicate Node";
-		duplicateItem.onClick = _ -> {
+		addItem("Duplicate Node", _ -> {
 			session.duplicateNode(node.data);
-		};
+		});
 
-		var deleteItem = new MenuItem();
-		deleteItem.text = "Delete Node";
-		deleteItem.onClick = _ -> {
+		addItem("Delete Node", _ -> {
 			session.removeNode(node.data.id);
-		};
-
-		addComponent(duplicateItem);
-		addComponent(deleteItem);
+		});
 	}
 }

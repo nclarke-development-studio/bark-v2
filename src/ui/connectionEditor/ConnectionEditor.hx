@@ -115,7 +115,7 @@ class ConnectionEditor extends Dialog {
 			var dialog = new NodeEditor(canvas, node);
 			dialog.showDialog();
 			Timer.delay(() -> {
-				this.hide();
+				this.disposeComponent();
 			}, 100);
 		};
 

@@ -70,7 +70,7 @@ class DragUtil {
 			Screen.instance.registerEvent(MouseEvent.MOUSE_MOVE, onGlobalMove);
 			Screen.instance.registerEvent(MouseEvent.MOUSE_UP, onGlobalUp);
 
-			e.cancel();
+			// e.cancel();
 		});
 	}
 

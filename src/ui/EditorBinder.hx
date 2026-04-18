@@ -1,5 +1,7 @@
 package ui;
 
+import haxe.ui.focus.FocusManager;
+import haxe.ui.core.Screen;
 import ui.nodes.NodeView;
 import ui.menus.ConnectionContextMenu;
 import ui.menus.SelectionRectContextMenu;
@@ -46,42 +48,50 @@ class EditorBinder {
 			// canvas binding
 			canvas.onRequestCanvasContextMenu = (canvas, x, y) -> {
 				if (canvasContextMenu != null) {
-					canvasContextMenu.hide();
+					canvasContextMenu.close();
+					// canvas.removeComponent(canvasContextMenu);
+					// canvasContextMenu.disposeComponent();
 				}
 				canvasContextMenu = new GraphContextMenu(canvas, session);
 				canvasContextMenu.left = x;
 				canvasContextMenu.top = y;
-				canvasContextMenu.show();
+				canvas.addComponent(canvasContextMenu);
+				// canvasContextMenu.onMenuSelected = _ -> {
+				// 	// Screen.instance.removeComponent(canvasContextMenu);
+				// 	// canvasContextMenu.hide();
+				// 	// Screen.instance.invalidateAll();
+				// 	// FocusManager.instance.focus = Screen.instance.rootComponents[0];
+				// }
 			};
 
 			canvas.onRequestNodeContextMenu = (node, x, y) -> {
 				if (nodeContextMenu != null) {
-					nodeContextMenu.hide();
+					nodeContextMenu.close();
 				}
 				nodeContextMenu = new NodeContextMenu(node, session, canvas);
 				nodeContextMenu.left = x;
 				nodeContextMenu.top = y;
-				nodeContextMenu.show();
+				canvas.addComponent(nodeContextMenu);
 			}
 
 			canvas.onRequestConnectionContextMenu = (connection, x, y) -> {
 				if (connectionContextMenu != null) {
-					connectionContextMenu.hide();
+					connectionContextMenu.close();
 				}
 				connectionContextMenu = new ConnectionContextMenu(connection, session, canvas);
 				connectionContextMenu.left = x;
 				connectionContextMenu.top = y;
-				connectionContextMenu.show();
+				canvas.addComponent(connectionContextMenu);
 			}
 
-			canvas.onRequestSelectionContextMenu = (c, x, y) -> {
+			canvas.onRequestSelectionContextMenu = (c, n, x, y) -> {
 				if (selectionContextMenu != null) {
-					selectionContextMenu.hide();
+					selectionContextMenu.close();
 				}
-				selectionContextMenu = new SelectionRectContextMenu(c, session);
+				selectionContextMenu = new SelectionRectContextMenu(c, n, session);
 				selectionContextMenu.left = x;
 				selectionContextMenu.top = y;
-				selectionContextMenu.show();
+				canvas.addComponent(selectionContextMenu);
 			}
 
 			canvas.onRequestNodesDelete = (nodes:Array<NodeView>) -> {

@@ -1,46 +1,32 @@
 package ui.menus;
 
+import ui.components.ContextMenu;
 import ui.canvas.NodeCanvas;
 import ui.nodeeditor.NodeEditor;
 import util.WorkspaceUtils;
 import core.EditorSession;
 import ui.nodes.NodeView;
-import haxe.ui.containers.menus.Menu;
-import haxe.ui.containers.menus.MenuItem;
 
-class NodeContextMenu extends Menu {
+class NodeContextMenu extends ContextMenu {
 	public function new(node:NodeView, session:EditorSession, canvas:NodeCanvas) {
 		super();
 
 		// TODO: open schema name menu
-		var saveItem = new MenuItem();
-		saveItem.text = "Save Node";
-		saveItem.onClick = _ -> {
+		addItem("Save Node", _ -> {
 			session.addSchemaToWorkspace(WorkspaceUtils.encodeSchema('test', '', [node.data], session.graph.data.connections));
-		};
+		});
 
-		var focusItem = new MenuItem();
-		focusItem.text = "Open Node";
-		focusItem.onClick = _ -> {
+		addItem("Open Node", _ -> {
 			var dialog = new NodeEditor(canvas, node);
 			dialog.showDialog();
-		};
+		});
 
-		var duplicateItem = new MenuItem();
-		duplicateItem.text = "Duplicate Node";
-		duplicateItem.onClick = _ -> {
+		addItem("Duplicate Node", _ -> {
 			session.duplicateNode(node.data);
-		};
+		});
 
-		var deleteItem = new MenuItem();
-		deleteItem.text = "Delete Node";
-		deleteItem.onClick = _ -> {
+		addItem("Delete Node", _ -> {
 			session.removeNode(node.data.id);
-		};
-
-		addComponent(focusItem);
-		addComponent(saveItem);
-		addComponent(duplicateItem);
-		addComponent(deleteItem);
+		});
 	}
 }

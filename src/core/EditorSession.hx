@@ -15,6 +15,7 @@ import core.commands.RemoveNodeCommand;
 // import data.WorkspaceData;
 import data.SceneData;
 import core.commands.AddNodeCommand;
+import core.commands.AddNodesCommand;
 import data.NodeData;
 import data.ConnectionData;
 #if !js
@@ -37,6 +38,7 @@ interface IEditorSession {
 	function removeNode(id:String):Void;
 	function removeNodes(ids:Array<String>):Void;
 	function duplicateNode(d:NodeData):Void;
+	function duplicateNodes(d:Array<NodeData>):Void;
 
 	function connectPorts(n1:NodeData, p1:PortData, n2:NodeData, p2:PortData):ConnectionData;
 	function addConnection(c:ConnectionData):Void;
@@ -184,6 +186,37 @@ class EditorSession implements IEditorSession {
 		};
 
 		var cmd = new AddNodeCommand(graph, copyData);
+		history.execute(cmd);
+		notify(GraphChanged);
+	}
+	
+	public function duplicateNodes(d:Array<NodeData>) {
+		var nodes = [];
+		for(node in d){
+			var newPorts = node.ports.map(p -> {
+				return {
+					id: GUID.uuid(),
+					name: p.name,
+					direction: p.direction,
+					isMain: p.isMain
+				};
+			});
+	
+			// TODO: Deep copy fields
+	
+			var copyData = {
+				id: GUID.uuid(),
+				type: node.type,
+				x: node.x + 20,
+				y: node.y + 20,
+				ports: newPorts,
+				fields: node.fields,
+			};
+
+			nodes.push(copyData);
+		}
+
+		var cmd = new AddNodesCommand(graph, nodes);
 		history.execute(cmd);
 		notify(GraphChanged);
 	}

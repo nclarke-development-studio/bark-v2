@@ -1,5 +1,6 @@
 package ui.canvas;
 
+import ui.nodes.NodeView;
 import haxe.ui.events.MouseEvent;
 import haxe.ui.components.Canvas;
 import haxe.ui.geom.Point;
@@ -19,7 +20,7 @@ class CanvasSelection {
 	public var movingSelectedNodes = false;
 
 	// callbacks
-	public var onRequestContextMenu:(c:NodeCanvas, x:Float, y:Float) -> Void;
+	public var onRequestContextMenu:(c:NodeCanvas, n:Array<NodeView>, x:Float, y:Float) -> Void;
 
 	public function new(canvas:NodeCanvas) {
 		this.canvas = canvas;
@@ -32,7 +33,7 @@ class CanvasSelection {
 		selectionArea.onRightClick = function(e:MouseEvent) {
 			e.cancel();
 			if (onRequestContextMenu != null) {
-				onRequestContextMenu(canvas, e.screenX, e.screenY);
+				onRequestContextMenu(canvas, canvas.selectedNodes, e.localX, e.localY);
 			}
 		}
 	}

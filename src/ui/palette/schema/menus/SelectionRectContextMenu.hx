@@ -1,26 +1,20 @@
 package ui.palette.schema.menus;
 
+import ui.nodes.NodeView;
+import ui.components.ContextMenu;
 import core.EditorSession;
 import ui.canvas.NodeCanvas;
-import haxe.ui.containers.menus.Menu;
-import haxe.ui.containers.menus.MenuItem;
 
-class SelectionRectContextMenu extends Menu {
-	public function new(c:NodeCanvas, session:EditorSession) {
+class SelectionRectContextMenu extends ContextMenu {
+	public function new( c:NodeCanvas, nodes: Array<NodeView>, session:EditorSession) {
 		super();
 
-		var saveNodesItem = new MenuItem();
-		saveNodesItem.text = "Duplicate Node(s)";
-		saveNodesItem.onClick = _ -> {
-			// trace(session.createSchema(name, c.selectedNodes));
-		};
-		addComponent(saveNodesItem);
+		addItem("Duplicate Node(s)", _ -> {
+			session.duplicateNodes(nodes.map(n -> n.data));
+		});
 
-		var deleteNodes = new MenuItem();
-		deleteNodes.text = "Delete Node(s)";
-		deleteNodes.onClick = _ -> {
-			trace('delete nodes');
-		};
-		addComponent(deleteNodes);
+		addItem("Delete Node(s)", _ -> {
+			session.removeNodes(nodes.map(n -> n.data.id));
+		});
 	}
 }

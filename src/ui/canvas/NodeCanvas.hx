@@ -63,7 +63,7 @@ class NodeCanvas extends Absolute {
 	public var onRequestCanvasContextMenu:(NodeCanvas, x:Float, y:Float) -> Void;
 	public var onRequestNodeContextMenu:(NodeView, x:Float, y:Float) -> Void;
 	public var onRequestConnectionContextMenu:(ConnectionData, x:Float, y:Float) -> Void;
-	public var onRequestSelectionContextMenu:(NodeCanvas, x:Float, y:Float) -> Void;
+	public var onRequestSelectionContextMenu:(NodeCanvas, Array<NodeView>, x:Float, y:Float) -> Void;
 
 	public var onRequestNodeCreate:(node:NodeGroupSchema, x:Float, y:Float) -> Array<NodeData>;
 	public var onRequestNodesDelete:(Array<NodeView>) -> Void;
@@ -166,61 +166,69 @@ class NodeCanvas extends Absolute {
 	public function registerMouseEvents() {
 		registerEvent(MouseEvent.RIGHT_CLICK, e -> {
 			if (onRequestCanvasContextMenu != null) {
-				onRequestCanvasContextMenu(this, e.screenX, e.screenY);
+				onRequestCanvasContextMenu(this, e.localX, e.localY);
 			}
 		});
 
 		// since absolute doesn't seem to take keyboard events
-		haxe.ui.core.Screen.instance.registerEvent(KeyboardEvent.KEY_DOWN, (e:KeyboardEvent) -> {
-			// to determine if this is the active node canvas
-			var top = haxe.ui.core.Screen.instance.topComponent;
+		// #if openfl
+		// openfl.Lib.current.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, onOpenFLKeyDown, true, 100);
+		// #else
+		haxe.ui.core.Screen.instance.registerEvent(KeyboardEvent.KEY_DOWN, onKeyDown);
+		// #end
+	}
 
-			if (top != null && !top.containsComponent(this) && top != this) {
+	private function onKeyDown(e:KeyboardEvent) {
+		// to determine if this is the active node canvas
+		var top = haxe.ui.core.Screen.instance.topComponent;
+		
+		var currentFocus = FocusManager.instance.focus;
+
+		if (currentFocus == null && top != null && !top.containsComponent(this) && top != this) {
+			return;
+		}
+
+		// if something is focused, and it's a text input, ignore the shortcut unless it's a save or something
+		if (currentFocus != null) {
+			if (Std.isOfType(currentFocus, TextField) || Std.isOfType(currentFocus, TextArea)) {
 				return;
 			}
+		}
 
-			var currentFocus = FocusManager.instance.focus;
-
-			// if something is focused, and it's a text input, ignore the shortcut unless it's a save or something
-			if (currentFocus != null) {
-				if (Std.isOfType(currentFocus, TextField) || Std.isOfType(currentFocus, TextArea)) {
-					return;
+		switch (e.keyCode) {
+			case KeyCodes.A:
+				var mouseX = Screen.instance.currentMouseX - this.screenLeft;
+				var mouseY = Screen.instance.currentMouseY - this.screenTop;
+				onRequestCanvasContextMenu(this, mouseX, mouseY);
+			// case KeyCodes.S:
+			// 	if (e.ctrlKey) {
+			// 		if (onRequestSave != null) {
+			// 			onRequestSave();
+			// 		}
+			// 	}
+			case KeyCodes.Z:
+				if (e.ctrlKey) {
+					if (onRequestUndo != null) {
+						onRequestUndo();
+					}
 				}
-			}
 
-			e.cancel();
-
-			switch (e.keyCode) {
-				case KeyCodes.A:
-					var mouseX = Screen.instance.currentMouseX;
-					var mouseY = Screen.instance.currentMouseY;
-					onRequestCanvasContextMenu(this, mouseX, mouseY);
-
-				case KeyCodes.S:
-					if (e.ctrlKey) {
-						if (onRequestSave != null) {
-							onRequestSave();
-						}
+			case KeyCodes.Y:
+				if (e.ctrlKey) {
+					if (onRequestRedo != null) {
+						onRequestRedo();
 					}
-				case KeyCodes.Z:
-					if (e.ctrlKey) {
-						if (onRequestUndo != null) {
-							onRequestUndo();
-						}
-					}
+				}
 
-				case KeyCodes.Y:
-					if (e.ctrlKey) {
-						if (onRequestRedo != null) {
-							onRequestRedo();
-						}
-					}
+			case KeyCodes.DELETE:
+				onRequestNodesDelete(selectedNodes);
+				selection.endSelection();
 
-				case KeyCodes.DELETE:
-					onRequestNodesDelete(selectedNodes);
-			}
-		});
+		}
 	}
+
+
+
 
 	@:bind(this, MouseEvent.MOUSE_DOWN)
 	function onMouseDown(e:MouseEvent) {

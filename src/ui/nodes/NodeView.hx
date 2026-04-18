@@ -1,5 +1,6 @@
 package ui.nodes;
 
+import haxe.ui.events.KeyboardEvent;
 import haxe.ui.containers.Grid;
 import haxe.ui.components.TextArea;
 import haxe.ui.components.TextField;
@@ -39,7 +40,7 @@ class NodeView extends VBox {
 	public var fieldContainer:VBox;
 
 	// callbacks
-	public var onRequestContextMenu:(n:NodeView, x:Float, y:Float) -> Void;
+	public var onRequestContextMenu:(n:NodeView) -> Void;
 	public var onRemoveConnection:(c:ConnectionData) -> Void;
 	public var onNodeClicked:(e: MouseEvent, n:NodeView) -> Void;
 
@@ -74,7 +75,7 @@ class NodeView extends VBox {
 		registerEvent(MouseEvent.RIGHT_CLICK, e -> {
 			e.cancel();
 			if (onRequestContextMenu != null)
-				onRequestContextMenu(this, e.screenX, e.screenY);
+				onRequestContextMenu(this);
 		});
 
 		fieldContainer = new VBox();

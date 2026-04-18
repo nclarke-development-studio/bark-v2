@@ -1,6 +1,6 @@
 package;
 
-import haxe.ui.events.KeyboardEvent;
+import ui.menus.GraphContextMenu;
 import haxe.ui.events.KeyboardEvent;
 import util.KeyCodes;
 import ui.nodes.NodeFactory;
@@ -35,8 +35,6 @@ class Main {
 
 				var editorBinder = new EditorBinder(session, canvas, palette, toolbar);
 
-				// var schemaBinder = new EditorBinder(session, canvas, schemapalette);
-
 				session.createWorkspace('default');
 
 				root.addComponent(toolbar);
@@ -52,6 +50,8 @@ class Main {
 				mainHBox.addComponent(canvas);
 
 				root.addComponent(mainHBox);
+
+				root.tabIndex = 0;
 
 				app.addComponent(root);
 

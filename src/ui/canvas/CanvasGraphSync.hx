@@ -1,5 +1,6 @@
 package ui.canvas;
 
+import haxe.ui.core.Screen;
 import core.Graph;
 import haxe.ds.StringMap;
 import ui.nodes.NodeView;
@@ -49,8 +50,11 @@ class CanvasGraphSync {
 					canvas.nodeMouseDown(e, n);
 				}
 
-				nv.onRequestContextMenu = (n, x, y) -> {
+				nv.onRequestContextMenu = (n) -> {
 					if (canvas.onRequestNodeContextMenu != null) {
+						var x = Screen.instance.currentMouseX - canvas.screenLeft;
+						var y = Screen.instance.currentMouseY - canvas.screenTop;
+
 						canvas.onRequestNodeContextMenu(n, x, y);
 					}
 				}
@@ -113,12 +117,12 @@ class CanvasGraphSync {
 
 				if (fromNode != null && toNode != null) {
 					cv = new ConnectionView(fromNode, toNode, connData);
-					
+
 					cv.onRequestContextMenu = (c, x, y) -> {
-					if (canvas.onRequestConnectionContextMenu != null) {
-						canvas.onRequestConnectionContextMenu(c, x, y);
+						if (canvas.onRequestConnectionContextMenu != null) {
+							canvas.onRequestConnectionContextMenu(c, x, y);
+						}
 					}
-				}
 
 					canvas.connections.push(cv);
 					canvas.edgeLayer.addComponent(cv);

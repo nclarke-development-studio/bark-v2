@@ -112,7 +112,7 @@ class NodePalette extends VBox {
 						onNodeDrop(schema, e.screenX, e.screenY);
 					}
 
-					dragGhost.hide();
+					dragGhost.disposeComponent();
 					dragGhost = null;
 
 					button.screen.unregisterEvent(MouseEvent.MOUSE_MOVE, mouseMoveFn);

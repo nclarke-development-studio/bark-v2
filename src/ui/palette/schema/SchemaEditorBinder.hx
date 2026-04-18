@@ -49,42 +49,42 @@ class SchemaEditorBinder {
 			// canvas binding
 			canvas.onRequestCanvasContextMenu = (canvas, x, y) -> {
 				if (canvasContextMenu != null) {
-					canvasContextMenu.hide();
+					canvasContextMenu.close();
 				}
 				canvasContextMenu = new GraphContextMenu(canvas, session, schema, close);
 				canvasContextMenu.left = x;
 				canvasContextMenu.top = y;
-				canvasContextMenu.show();
+				canvas.addComponent(canvasContextMenu);
 			};
 
 			canvas.onRequestNodeContextMenu = (canvas, x, y) -> {
 				if (nodeContextMenu != null) {
-					nodeContextMenu.hide();
+					nodeContextMenu.close();
 				}
 				nodeContextMenu = new NodeContextMenu(canvas, session);
 				nodeContextMenu.left = x;
 				nodeContextMenu.top = y;
-				nodeContextMenu.show();
+				canvas.addComponent(nodeContextMenu);
 			}
 
 			canvas.onRequestConnectionContextMenu = (connection, x, y) -> {
 				if (connectionContextMenu != null) {
-					connectionContextMenu.hide();
+					connectionContextMenu.close();
 				}
 				connectionContextMenu = new ConnectionContextMenu(connection, session, canvas);
 				connectionContextMenu.left = x;
 				connectionContextMenu.top = y;
-				connectionContextMenu.show();
+				canvas.addComponent(connectionContextMenu);
 			}
 
-			canvas.onRequestSelectionContextMenu = (c, x, y) -> {
+			canvas.onRequestSelectionContextMenu = (c, n, x, y) -> {
 				if (selectionContextMenu != null) {
-					selectionContextMenu.hide();
+					selectionContextMenu.close();
 				}
-				selectionContextMenu = new SelectionRectContextMenu(c, session);
+				selectionContextMenu = new SelectionRectContextMenu(c, n, session);
 				selectionContextMenu.left = x;
 				selectionContextMenu.top = y;
-				selectionContextMenu.show();
+				canvas.addComponent(selectionContextMenu);
 			}
 
 			canvas.onRequestNodesDelete = (nodes:Array<NodeView>) -> {
