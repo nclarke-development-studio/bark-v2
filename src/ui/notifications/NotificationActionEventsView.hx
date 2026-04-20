@@ -48,3 +48,9 @@ class NotificationActionEventsView extends VBox {
 		return true; // return true to close the notification after action
 	}
 }
+/*  NotificationManager.instance.addNotification({
+		title: "Custom Styled Notification",
+		body: "This notification has has been styled by css",
+		styleNames: "custom-notification"
+	});
+ */

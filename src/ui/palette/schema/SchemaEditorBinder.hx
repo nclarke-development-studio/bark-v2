@@ -1,5 +1,7 @@
 package ui.palette.schema;
 
+import util.WorkspaceUtils;
+import ui.dialogs.NewSchemaDialog;
 import ui.menus.ConnectionContextMenu;
 import ui.nodes.NodeView;
 import data.NodeData.NodeGroupSchema;
@@ -27,10 +29,6 @@ class SchemaEditorBinder {
 		palette = p;
 		this.schema = schema;
 		this.close = close;
-
-		// canvas.onRequestAddNode = (x, y) -> {
-		// 	session.addNode(makeNodeAt(x, y));
-		// };
 
 		session.onChanged = (change) -> {
 			switch (change) {
@@ -136,6 +134,24 @@ class SchemaEditorBinder {
 						canvas.selectNode(view);
 					}
 				}
+			}
+
+			palette.onRequestSaveSchema = () -> {
+				var dialog = new NewSchemaDialog(session.workspace);
+
+				if (schema != null) {
+					dialog.schemaNameText = schema.name;
+				}
+				dialog.onConfirm = name -> {
+					if (schema != null)
+						session.removeSchemaFromWorkspace(schema.name);
+
+					var newSchema = WorkspaceUtils.encodeSchema(name, '', session.graph.data.nodes, session.graph.data.connections);
+
+					if (close != null && newSchema != null)
+						close(newSchema);
+				};
+				dialog.showDialog();
 			}
 
 			palette.init();

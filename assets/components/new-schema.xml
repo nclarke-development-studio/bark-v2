@@ -1,8 +1,8 @@
 <dialog title="Save Schema" width="300">
-	<vbox style="padding:10px; spacing:8px;">
-		<label text="Schema Name" />
-		<textfield id="schemaName"
-			placeholder="default"
-			validator="required" />
-	</vbox>
+  <vbox style="padding:10px; spacing:8px;">
+    <label text="Schema Name" />
+    <textfield id="schemaName" placeholder="default" validator="required" />
+
+    <label id="nameWarning" text="A schema with this name already exists!" style="color: #ff4444; font-size: 11px;" hidden="true" />
+  </vbox>
 </dialog>

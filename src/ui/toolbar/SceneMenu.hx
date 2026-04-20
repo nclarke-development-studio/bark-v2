@@ -17,6 +17,7 @@ class SceneMenu extends Menu {
 
 	public var onRequestOpenScene:() -> Void;
 	public var onRequestSaveScene:() -> Void;
+	public var duplicateScene:(String) -> Bool;
 	public var onRequestExportScene:() -> Void;
 
 	public var onRequestGetActiveScene:() -> SceneData;
@@ -41,7 +42,7 @@ class SceneMenu extends Menu {
 		var item = new MenuItem();
 		item.text = "New";
 		item.onClick = _ -> {
-			var dialog = new NewSceneDialog();
+			var dialog = new NewSceneDialog(duplicateScene);
 			dialog.onConfirm = name -> {
 				if (onRequestCreateScene != null)
 					onRequestCreateScene(name);
@@ -65,7 +66,7 @@ class SceneMenu extends Menu {
 			if (activeScene == null)
 				return;
 
-			var dialog = new NewSceneDialog();
+			var dialog = new NewSceneDialog(duplicateScene);
 			dialog.sceneNameText = activeScene.id;
 			dialog.onConfirm = name -> onRequestRenameScene(activeScene.id, name);
 			dialog.showDialog();

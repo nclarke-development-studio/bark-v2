@@ -20,6 +20,7 @@ class Toolbar extends MenuBar {
 	public var onRequestGetActiveScene:() -> SceneData;
 	public var onRequestGetWorkspaceScenes:() -> Array<SceneData>;
 	public var onRequestRenameScene:(String, String) -> Void;
+	public var duplicateScene:(String) -> Bool;
 
 	public var onRequestCreateWorkspace:(String) -> Void;
 	public var onRequestGetWorkspaceName:() -> String;
@@ -48,6 +49,7 @@ class Toolbar extends MenuBar {
 		sceneM.onRequestSaveScene = onRequestSaveScene;
 		sceneM.onRequestExportScene = onRequestExportScene;
 		sceneM.onRequestOpenScene = onRequestOpenScene;
+		sceneM.duplicateScene = duplicateScene;
 
 		sceneM.onRequestGetActiveScene = onRequestGetActiveScene;
 		sceneM.onRequestGetWorkspaceScenes = onRequestGetWorkspaceScenes;

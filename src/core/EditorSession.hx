@@ -129,8 +129,7 @@ class EditorSession implements IEditorSession {
 		var nodes = decoded.nodes;
 		var connections = decoded.connections;
 
-		for (n in nodes)
-			history.execute(new AddNodeCommand(graph, n));
+		history.execute(new AddNodesCommand(graph, nodes));
 		for (c in connections) {
 			history.execute(new ConnectPortsCommand(graph, c));
 		}

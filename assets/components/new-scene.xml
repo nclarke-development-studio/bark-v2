@@ -1,8 +1,7 @@
 <dialog title="New Scene" width="300">
-	<vbox style="padding:10px; spacing:8px;">
-		<label text="Scene Name" />
-		<textfield id="sceneName"
-			placeholder="default"
-			validator="required" />
-	</vbox>
+  <vbox style="padding:10px; spacing:8px;">
+    <label text="Scene Name" />
+    <textfield id="sceneName" placeholder="default" validator="required" />
+    <label id="nameWarning" text="A scene with this name already exists!" style="color: #ff4444; font-size: 11px;" hidden="true" />
+  </vbox>
 </dialog>

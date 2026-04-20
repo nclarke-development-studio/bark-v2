@@ -1,5 +1,7 @@
 package util;
 
+import haxe.ui.notifications.NotificationManager;
+import haxe.ui.notifications.NotificationType;
 import data.PortData;
 import haxe.ui.util.GUID;
 import data.ConnectionData;
@@ -62,9 +64,13 @@ class WorkspaceUtils {
 	}
 
 	public static function encodeSchema(name:String, color:String, nodes:Array<NodeData>, connections:Array<ConnectionData>):NodeGroupSchema {
-		if (nodes.length == 0) {
-			// TODO: Notification
-			throw "Cannot encode empty schema";
+		if (nodes == null || nodes.length == 0) {
+			NotificationManager.instance.addNotification({
+				title: "Export Failed",
+				body: "Cannot encode schema: No nodes were selected.",
+				type: NotificationType.Error
+			});
+			return null;
 		}
 
 		var portKeyMaps = new Map<String, Map<String, String>>();
@@ -99,6 +105,7 @@ class WorkspaceUtils {
 			});
 		}
 
+		var connectionErrors = 0;
 		for (c in connections) {
 			if (!idMap.exists(c.fromNode) || !idMap.exists(c.toNode))
 				continue;
@@ -106,14 +113,24 @@ class WorkspaceUtils {
 			var fromKey = portKeyMaps.get(c.fromNode).get(c.fromPort);
 			var toKey = portKeyMaps.get(c.toNode).get(c.toPort);
 
-			if (fromKey == null || toKey == null)
+			if (fromKey == null || toKey == null) {
+				connectionErrors++;
 				continue;
+			}
 
 			schemaEdges.push({
 				from: idMap.get(c.fromNode),
 				to: idMap.get(c.toNode),
 				fromHandle: fromKey,
 				toHandle: toKey
+			});
+		}
+
+		if (connectionErrors > 0) {
+			NotificationManager.instance.addNotification({
+				title: "Schema Warning",
+				body: 'Encoded with $connectionErrors broken or missing connection(s).',
+				type: NotificationType.Warning
 			});
 		}
 
@@ -126,6 +143,15 @@ class WorkspaceUtils {
 	}
 
 	public static function decodeSchema(schema:NodeGroupSchema, baseX:Float, baseY:Float):{nodes:Array<NodeData>, connections:Array<ConnectionData>} {
+		if (schema == null || schema.nodes == null || schema.nodes.length == 0) {
+			NotificationManager.instance.addNotification({
+				title: "Import Failed",
+				body: schema == null ? "Schema data is null." : '${schema.name} contains no nodes.',
+				type: NotificationType.Error
+			});
+			return {nodes: [], connections: []};
+		}
+
 		var nodes:Array<NodeData> = [];
 		var nodeIdMap = new Map<Int, String>();
 		var portKeyMap = new Map<String, Map<String, String>>();
@@ -209,7 +235,7 @@ class WorkspaceUtils {
 						portId: null
 					};
 
-					// TODO: skip this 
+					// TODO: skip this
 					// if (f.type == "data") {
 					// 	var pid = GUID.uuid();
 					// 	// ports.push({
@@ -235,6 +261,13 @@ class WorkspaceUtils {
 				fields: fields
 			});
 		}
+
+		// NotificationManager.instance.addNotification({
+		// 	title: "Import Success",
+		// 	body: 'Successfully spawned ${nodes.length} nodes from ${schema.name}.',
+		// 	type: NotificationType.Success,
+		// 	expiryMs: 3000
+		// });
 
 		return {
 			nodes: nodes,

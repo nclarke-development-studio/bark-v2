@@ -8,8 +8,6 @@ import data.PortData.PortDirection;
 import haxe.ui.util.GUID;
 import core.EditorSession;
 import ui.canvas.NodeCanvas;
-import haxe.ui.containers.menus.Menu;
-import haxe.ui.containers.menus.MenuItem;
 
 class GraphContextMenu extends ContextMenu {
 	public function new(canvas:NodeCanvas, session:EditorSession, schema:NodeGroupSchema, ?closeSchemaEditor:(NodeGroupSchema) -> Void) {
@@ -43,7 +41,7 @@ class GraphContextMenu extends ContextMenu {
 		//
 
 		addItem("Save Schema", _ -> {
-			var dialog = new NewSchemaDialog();
+			var dialog = new NewSchemaDialog(session.workspace);
 			if (schema != null) {
 				dialog.schemaNameText = schema.name;
 			}
@@ -52,8 +50,8 @@ class GraphContextMenu extends ContextMenu {
 					session.removeSchemaFromWorkspace(schema.name);
 
 				var newSchema = WorkspaceUtils.encodeSchema(name, '', session.graph.data.nodes, session.graph.data.connections);
-				// session.addSchemaToWorkspace(newSchema);
-				if (closeSchemaEditor != null)
+
+				if (closeSchemaEditor != null && newSchema != null)
 					closeSchemaEditor(newSchema);
 			};
 			dialog.showDialog();

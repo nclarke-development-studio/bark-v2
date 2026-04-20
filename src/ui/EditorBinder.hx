@@ -1,7 +1,5 @@
 package ui;
 
-import haxe.ui.focus.FocusManager;
-import haxe.ui.core.Screen;
 import ui.nodes.NodeView;
 import ui.menus.ConnectionContextMenu;
 import ui.menus.SelectionRectContextMenu;
@@ -145,6 +143,9 @@ class EditorBinder {
 			toolbar.onRequestSaveScene = session.saveScene;
 			toolbar.onRequestExportScene = session.exportScene;
 			toolbar.onRequestOpenScene = session.loadScene;
+			toolbar.duplicateScene = (s) -> {
+				session.workspace.scenes.exists(s);
+			}
 
 			toolbar.onRequestGetActiveScene = session.getActiveScene;
 			toolbar.onRequestGetWorkspaceScenes = session.getWorkspaceScenes;

@@ -1,8 +1,6 @@
 package ui.toolbar;
 
 import ui.dialogs.NewWorkspaceDialog;
-import haxe.ui.containers.dialogs.Dialog.DialogButton;
-import haxe.ui.containers.dialogs.Dialogs;
 import haxe.ui.containers.menus.Menu;
 import haxe.ui.containers.menus.MenuItem;
 
@@ -98,7 +96,4 @@ class WorkspaceMenu extends Menu {
 		};
 		return item;
 	}
-
-	// public function rebuild(w:Workspace) {
-	// }
 }

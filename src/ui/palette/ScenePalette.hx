@@ -42,12 +42,8 @@ class ScenePalette extends VBox {
 		var addBtn = new Button();
 		addBtn.text = "+ Add Scene";
 		addBtn.onClick = _ -> {
-			var dialog = new NewSceneDialog();
+			var dialog = new NewSceneDialog((s) -> workspace.scenes.exists(s));
 			dialog.onConfirm = name -> {
-				// controller.createScene(name);
-				// controller.switchScene(name);
-				// rebuild();
-
 				if (onSceneCreate != null)
 					onSceneCreate(name);
 

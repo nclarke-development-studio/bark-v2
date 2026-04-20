@@ -1,6 +1,7 @@
 package ui.palette;
 
-import ui.palette.schema.SchemaEditor;
+import haxe.ui.notifications.NotificationType;
+import haxe.ui.notifications.NotificationManager;
 import core.Workspace;
 import haxe.Resource;
 import haxe.Json;
@@ -9,15 +10,6 @@ import haxe.ui.containers.VBox;
 import haxe.ui.containers.Collapsible;
 import haxe.ui.components.Button;
 import haxe.ui.events.MouseEvent;
-#if !js
-import sys.io.File;
-#end
-#if js
-import js.Browser;
-#end
-#if nodejs
-import js.node.Fs;
-#end
 
 class NodePalette extends VBox {
 	var dragGhost:Button = null;
@@ -41,9 +33,42 @@ class NodePalette extends VBox {
 	}
 
 	function loadSchemas():Void {
-		var raw = Resource.getString("nodes/builtin.json");
-		var parsed = Json.parse(raw);
-		builtInSchemas = parsed.nodes;
+		try {
+			var raw = Resource.getString("nodes/builtin.json");
+			if (raw == null) {
+				NotificationManager.instance.addNotification({
+					title: "Resource Error",
+					body: "Could not find 'nodes/builtin.json' in application resources.",
+					type: NotificationType.Error
+				});
+				builtInSchemas = [];
+				return;
+			}
+
+			var parsed = Json.parse(raw);
+
+			if (parsed == null || !Reflect.hasField(parsed, "nodes") || !Std.isOfType(parsed.nodes, Array)) {
+				NotificationManager.instance.addNotification({
+					title: "Data Error",
+					body: "builtin.json is missing the 'nodes' array.",
+					type: NotificationType.Error
+				});
+				builtInSchemas = [];
+				return;
+			}
+
+			builtInSchemas = parsed.nodes;
+
+		} catch (e:Dynamic) {
+			// 4. Catch unexpected crashes (like malformed JSON syntax)
+			NotificationManager.instance.addNotification({
+				title: "Critical Load Error",
+				body: "Failed to parse built-in nodes: " + Std.string(e),
+				type: NotificationType.Error,
+				expiryMs: -1 // Keep visible so user can see the error details
+			});
+			builtInSchemas = [];
+		}
 	}
 
 	public function rebuild(workspace:Workspace):Void {
@@ -79,7 +104,7 @@ class NodePalette extends VBox {
 			var addBtn = new Button();
 			addBtn.text = "+ Create Node";
 			addBtn.onClick = _ -> {
-				if(onRequestSchemaMode != null){
+				if (onRequestSchemaMode != null) {
 					onRequestSchemaMode();
 				}
 			};
@@ -129,31 +154,4 @@ class NodePalette extends VBox {
 		dragGhost.x = e.screenX - dragGhost.width / 2;
 		dragGhost.y = e.screenY - dragGhost.height / 2;
 	}
-
-	// function createNodeFromSchema(schema:SchemaNode, e:MouseEvent):Void {
-	// 	var localPos = NodeCanvas.instance.contentLayer.globalToLocal(new Point(e.screenX, e.screenY));
-	// 	var fields:Array<NodeField> = [];
-	// 	if (schema.fields != null) {
-	// 		for (f in schema.fields) {
-	// 			fields.push(schemaFieldToNodeField(f));
-	// 		}
-	// 	}
-	// 	var node:NodeData = {
-	// 		id: GUID.uuid(),
-	// 		type: schema.type,
-	// 		x: localPos.x,
-	// 		y: localPos.y,
-	// 		ports: [],
-	// 		fields: fields
-	// 	};
-	// 	controller.addNode(node);
-	// }
-	// function schemaFieldToNodeField(f:SchemaField):NodeField {
-	// 	return {
-	// 		key: f.key,
-	// 		type: f.type,
-	// 		value: (f.type == "data") ? null : f.value,
-	// 		portId: (f.type == "data") ? GUID.uuid() : null
-	// 	};
-	// }
 }
