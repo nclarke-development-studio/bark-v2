@@ -2,6 +2,7 @@
   <resources>
     <resource path="assets/styles" prefix="styles" />
     <resource path="assets/icons" prefix="icons" />
+    <resource path="assets/images" prefix="images" />
     <resource path="assets/components" prefix="components" />
     <resource path="assets/nodes" prefix="nodes" />
   </resources>

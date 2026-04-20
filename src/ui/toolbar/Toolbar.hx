@@ -1,5 +1,7 @@
 package ui.toolbar;
 
+import haxe.ui.containers.dialogs.Dialog.DialogButton;
+import ui.dialogs.AboutView;
 import core.Workspace;
 import data.SceneData;
 import haxe.ui.containers.menus.Menu;
@@ -78,7 +80,9 @@ class Toolbar extends MenuBar {
 
 		var about = new MenuItem();
 		about.text = "About";
-		about.onClick = _ -> Dialogs.messageBox("About info", "About", "info");
+		about.onClick = _ -> {
+			haxe.ui.containers.dialogs.Dialogs.dialog(new AboutView(), "About Bark", DialogButton.OK);
+		};
 
 		menu.addComponent(usage);
 		menu.addComponent(about);

@@ -137,7 +137,9 @@ class NodePalette extends VBox {
 						onNodeDrop(schema, e.screenX, e.screenY);
 					}
 
-					dragGhost.disposeComponent();
+					// TODO: figure out the proper way to delete components, not sure hiding is best and
+					// disposeComponent doesn't seem to do anything
+					dragGhost.hide();
 					dragGhost = null;
 
 					button.screen.unregisterEvent(MouseEvent.MOUSE_MOVE, mouseMoveFn);

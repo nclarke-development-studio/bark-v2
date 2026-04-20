@@ -1,0 +1,17 @@
+<vbox style="padding: 20px; spacing: 15px; width: 350px; align-items: center;">
+  <image resource="images/bark.png" width="300" height="300" horizontalAlign="center" />
+
+  <vbox horizontalAlign="center" style="spacing: 2px;">
+    <label text="Bark Dialogue Editor" style="font-weight: bold; font-size: 18px;" />
+    <label text="Version 1.0.0" style="font-size: 11px; opacity: 0.7;" />
+  </vbox>
+
+  <label width="100%" textAlign="center" wordWrap="true" text="The Bark Dialogue Editor is a relational JSON editor geared towards game development (dialogue) that aims to offer flexibility." />
+
+  <vbox horizontalAlign="center" style="spacing: 4px; padding-top: 10px;">
+    <label text="Created by" style="font-size: 10px; opacity: 0.6;" />
+    <label text="nclarke development studio" style="font-weight: bold;" />
+  </vbox>
+
+  <link text="https://studio.nclarke.dev/" style="color: #0000ff; cursor: pointer; text-decoration: underline;" id="studioLink" horizontalAlign="center" />
+</vbox>
