@@ -1,5 +1,6 @@
 package core;
 
+import core.commands.RemoveConnectionsCommand;
 import ui.palette.schema.SchemaEditor;
 import core.commands.RemoveNodesCommand;
 import haxe.Json;
@@ -243,6 +244,12 @@ class EditorSession implements IEditorSession {
 
 	public function removeConnection(c:ConnectionData) {
 		var cmd = new RemoveConnectionCommand(graph, c);
+		history.execute(cmd);
+		notify(GraphChanged);
+	}
+
+	public function removeConnections(c:Array<ConnectionData>) {
+		var cmd = new RemoveConnectionsCommand(graph, c);
 		history.execute(cmd);
 		notify(GraphChanged);
 	}

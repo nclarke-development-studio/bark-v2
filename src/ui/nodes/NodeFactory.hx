@@ -19,13 +19,13 @@ class NodeFactory {
 							id: GUID.uuid(),
 							name: 'mainSource',
 							direction: PortDirection.Output,
-							isMain: false
+							isMain: true
 						},
 						{
 							id: GUID.uuid(),
 							name: 'mainSource',
 							direction: PortDirection.Output,
-							isMain: false
+							isMain: true
 						}
 					],
 					fields: [],
@@ -41,7 +41,7 @@ class NodeFactory {
 							id: GUID.uuid(),
 							name: 'mainSource',
 							direction: PortDirection.Output,
-							isMain: false
+							isMain: true
 						}
 					],
 					fields: [],
@@ -57,7 +57,7 @@ class NodeFactory {
 							id: GUID.uuid(),
 							name: 'mainTarget',
 							direction: PortDirection.Input,
-							isMain: false
+							isMain: true
 						}
 					],
 					fields: [],

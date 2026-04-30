@@ -64,6 +64,13 @@ class CanvasGraphSync {
 						canvas.onRemoveConnection(c);
 					}
 				}
+				
+				nv.onRemoveConnectedEdges = (n:NodeView, handleId: String) -> {
+					if (canvas.onRemoveConnectedEdges != null) {
+						canvas.onRemoveConnectedEdges(n.data.id, handleId);
+						canvas.refreshConnections(n);
+					}
+				}
 
 				nv.onConnectionStart = (pv, e) -> {
 					canvas.beginConnection(pv, e);

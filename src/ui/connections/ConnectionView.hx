@@ -73,16 +73,6 @@ class ConnectionView extends Canvas {
 		var fromPos = c.contentLayer.globalToLocal(fromNode.getPortPosition(data.fromPort));
 		var toPos = c.contentLayer.globalToLocal(toNode.getPortPosition(data.toPort));
 
-		// Convert contentLayer/world coordinates into local Canvas space
-		// var invScale = 1.0 / parent.parent.scaleX; // assume uniform scaleX=scaleY
-		// var offsetX = -parent.parent.x;
-		// var offsetY = -parent.parent.y;
-
-		// sx = (fromPos.x + offsetX) * invScale;
-		// sy = (fromPos.y + offsetY) * invScale;
-		// ex = (toPos.x + offsetX) * invScale;
-		// ey = (toPos.y + offsetY) * invScale;
-
 		sx = fromPos.x;
 		sy = fromPos.y;
 		ex = toPos.x;

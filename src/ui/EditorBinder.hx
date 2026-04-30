@@ -1,5 +1,6 @@
 package ui;
 
+import util.ConnectionHelpers;
 import ui.nodes.NodeView;
 import ui.menus.ConnectionContextMenu;
 import ui.menus.SelectionRectContextMenu;
@@ -99,6 +100,11 @@ class EditorBinder {
 
 			canvas.onRemoveConnection = (c) -> {
 				session.removeConnection(c);
+			}
+
+			canvas.onRemoveConnectedEdges = (id, handleId) -> {
+				var connections = ConnectionHelpers.getEdgesOut(id, canvas.edgesOutMap).filter(c -> c.data.fromPort == handleId).map(v -> v.data);
+				session.removeConnections(connections);
 			}
 
 			canvas.onRequestNodeCreate = (s, x, y) -> {

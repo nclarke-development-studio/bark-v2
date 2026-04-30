@@ -11,13 +11,15 @@ import haxe.ui.util.GUID.uuid;
 
 class NodeDataEditor extends VBox {
 	public var data:NodeData;
+	public var node:NodeView;
 
 	/** Fired when fields/ports change in a way that affects layout */
 	public var onLayoutChanged:Void->Void;
 
-	public function new(data:NodeData) {
+	public function new(node:NodeView) {
 		super();
-		this.data = data;
+		this.node = node;
+		this.data = node.data;
 		percentWidth = 100;
 		padding = 4;
 
@@ -104,6 +106,11 @@ class NodeDataEditor extends VBox {
 		del.text = "X";
 		del.onClick = _ -> {
 			data.fields.remove(field);
+			if(field.type == "data"){
+				if(node.onRemoveConnectedEdges != null){
+					node.onRemoveConnectedEdges(node, field.portId);
+				}
+			}
 			rebuild();
 
 			invalidateComponentLayout();

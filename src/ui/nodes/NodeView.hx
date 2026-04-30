@@ -1,50 +1,27 @@
 package ui.nodes;
 
-import haxe.ui.events.KeyboardEvent;
-import haxe.ui.containers.Grid;
-import haxe.ui.components.TextArea;
-import haxe.ui.components.TextField;
-import haxe.ui.components.CheckBox;
+import haxe.ui.events.MouseEvent;
+import haxe.ui.events.UIEvent;
 import haxe.ui.core.Component;
-import haxe.ui.containers.HBox;
+import haxe.ui.containers.*;
+import haxe.ui.components.*;
+import haxe.ui.util.GUID.uuid;
+import openfl.geom.Point;
 import data.ConnectionData;
 import data.PortData.PortDirection;
-import openfl.geom.Point;
-import haxe.ui.containers.VBox;
-import haxe.ui.components.Label;
-import haxe.ui.components.Button;
-import haxe.ui.events.MouseEvent;
-import haxe.ui.util.GUID.uuid;
-import ui.nodes.PortView;
 import data.NodeData;
-
-// to help with null functions on create
-interface NodeViewActions {
-	function requestContextMenu(node:NodeView, e:MouseEvent):Void;
-	function nodeClicked(node:NodeView):Void;
-	function removeConnection(c:ConnectionData):Void;
-
-	function connectionStart(p:PortView, e:MouseEvent):Void;
-	function connectionFinish(p:PortView, e:MouseEvent):String;
-}
+import ui.nodes.PortView;
 
 class NodeView extends VBox {
 	public var selected:Bool = false;
 	public var data:NodeData;
-	public var outgoingConnections:Array<PortView> = [];
-	public var incomingConnections:Array<PortView> = [];
-
-	// public var sourcePort:PortView;
-	// public var targetPort:PortView;
-
 	public var fieldContainer:VBox;
 
-	// callbacks
+	// Callbacks
 	public var onRequestContextMenu:(n:NodeView) -> Void;
 	public var onRemoveConnection:(c:ConnectionData) -> Void;
-	public var onNodeClicked:(e: MouseEvent, n:NodeView) -> Void;
-
-	// portview callbacks
+	public var onRemoveConnectedEdges:(nodeView:NodeView, handleId:String) -> Void;
+	public var onNodeClicked:(e:MouseEvent, n:NodeView) -> Void;
 	public var onConnectionStart:(PortView, MouseEvent) -> Void;
 	public var onConnectionFinish:(PortView, MouseEvent) -> String;
 
@@ -52,127 +29,37 @@ class NodeView extends VBox {
 		super();
 		this.data = data;
 		addClass("node");
-		padding = 8;
-		width = 320;
-		// autoWidth = true;
 		top = data.y;
 		left = data.x;
+
 		var header = new Label();
 		header.text = data.type;
 		header.addClass("node-header");
-		mouseEnabled = true;
 		addComponent(header);
 	}
 
 	public function init() {
 		for (port in data.ports) {
-			addPort(port.id, port.name, port.direction);
+			addPort(port.id, port.name, port.direction, port.isMain);
 		}
 
-		// Selection click
-		// onClick = _onClick;
-		// Context menu
 		registerEvent(MouseEvent.RIGHT_CLICK, e -> {
 			e.cancel();
 			if (onRequestContextMenu != null)
 				onRequestContextMenu(this);
 		});
 
-		fieldContainer = new VBox();
-		fieldContainer.percentWidth = 100;
-
 		addFieldButtons();
-		addComponent(fieldContainer);
-		populateData();
-	}
 
-	private function populateData() {
-		for (field in data.fields) {
-			var valueInput:Component;
-			var grid = new Grid();
-			grid.columns = 3; // Key input | Value input | Delete button
-			grid.percentWidth = 100;
-
-			var keyInput = new TextField();
-			keyInput.placeholder = "Key";
-			keyInput.percentWidth = 90;
-			keyInput.text = field.key;
-			keyInput.onChange = _ -> field.key = keyInput.text;
-
-			grid.addComponent(keyInput);
-
-			switch (field.type) {
-				default:
-					valueInput = null;
-				case "string", "number":
-					var ti = new TextField();
-					ti.percentWidth = 90;
-					ti.placeholder = "input value";
-					ti.text = field.value;
-					ti.onChange = _ -> field.value = ti.text;
-					valueInput = ti;
-
-				case "text":
-					var ta = new TextArea();
-					ta.percentWidth = 100;
-					ta.placeholder = "input value";
-					ta.height = 60;
-					ta.value = field.value;
-					ta.onChange = _ -> field.value = ta.text;
-					valueInput = ta;
-
-				case "boolean":
-					var cb = new CheckBox();
-					cb.value = field.value;
-					cb.onChange = _ -> field.value = cb.selected;
-					valueInput = cb;
-			}
-
-			if (valueInput != null)
-				grid.addComponent(valueInput);
-
-			// Delete button
-			var delBtn = new Button();
-			delBtn.text = "X";
-			delBtn.onClick = _ -> {
-				fieldContainer.removeComponent(grid);
-				for (i in 0...data.fields.length) {
-					// Remove port if applicable
-					// if (field.portId != null) {
-					// 	removeConnection()
-					// }
-					if (data.fields[i] == field) {
-						data.fields.splice(i, 1);
-						break;
-					}
-				}
-			}
-			grid.addComponent(delBtn);
-
-			if (field.type == 'data') {
-				var portData = {
-					id: field.portId,
-					name: field.key,
-					direction: PortDirection.Output,
-					isMain: false,
-				};
-
-				valueInput = null;
-				var pv = new PortView(this, portData, null, onConnectionStart, onConnectionFinish);
-				grid.addComponent(pv);
-			}
-
-			fieldContainer.addComponent(grid);
-		}
-	}
-
-	public function rebuildFields():Void {
-		removeComponent(fieldContainer);
 		fieldContainer = new VBox();
 		fieldContainer.percentWidth = 100;
 		addComponent(fieldContainer);
-		populateData();
-		updatePorts();
+
+		// Populate existing fields
+		if (data.fields != null) {
+			for (field in data.fields)
+				createFieldRow(field);
+		}
 	}
 
 	private function addFieldButtons():Void {
@@ -181,30 +68,13 @@ class NodeView extends VBox {
 		btnBox.percentWidth = 100;
 		addComponent(btnBox);
 
-		var stringBtn = new Button();
-		stringBtn.text = "Add String";
-		stringBtn.onClick = _ -> addField("string");
-		btnBox.addComponent(stringBtn);
-
-		var textBtn = new Button();
-		textBtn.text = "Add Text";
-		textBtn.onClick = _ -> addField("text");
-		btnBox.addComponent(textBtn);
-
-		var numberBtn = new Button();
-		numberBtn.text = "Add Number";
-		numberBtn.onClick = _ -> addField("number");
-		btnBox.addComponent(numberBtn);
-
-		var boolBtn = new Button();
-		boolBtn.text = "Add Boolean";
-		boolBtn.onClick = _ -> addField("boolean");
-		btnBox.addComponent(boolBtn);
-
-		var dataBtn = new Button();
-		dataBtn.text = "Add Data Port";
-		dataBtn.onClick = _ -> addField("data");
-		btnBox.addComponent(dataBtn);
+		var types = ["string", "text", "number", "boolean", "data"];
+		for (type in types) {
+			var btn = new Button();
+			btn.text = "Add " + type.charAt(0).toUpperCase() + type.substring(1);
+			btn.onClick = _ -> addField(type);
+			btnBox.addComponent(btn);
+		}
 	}
 
 	private function addField(type:String):Void {
@@ -212,110 +82,119 @@ class NodeView extends VBox {
 			type: type,
 			key: "",
 			value: null,
-			portId: null
+			portId: (type == "data") ? uuid() : null
 		};
+		if (data.fields == null)
+			data.fields = [];
+		data.fields.push(rowData);
+		createFieldRow(rowData);
+	}
 
-		// Create a grid row
+	/**
+	 * Refactored: Single source of truth for creating a field UI row
+	 */
+	private function createFieldRow(field:NodeField) {
 		var grid = new Grid();
-		grid.columns = 3; // Key input | Value input | Delete button
+		grid.columns = 4;
 		grid.percentWidth = 100;
 
-		// Key input
 		var keyInput = new TextField();
 		keyInput.placeholder = "Key";
-		keyInput.percentWidth = 90;
-		keyInput.onChange = _ -> rowData.key = keyInput.text;
+		keyInput.width = 100;
+		keyInput.text = field.key;
+		keyInput.onChange = _ -> field.key = keyInput.text;
 		grid.addComponent(keyInput);
 
-		// Value input
-		var valueInput:Component;
+		var valueContainer = new Box();
+		valueContainer.percentWidth = 100;
 
-		switch (type) {
-			default:
-				valueInput = null;
+		var valueInput:Component = null;
+		var portView:PortView = null;
+
+		switch (field.type) {
 			case "string", "number":
 				var ti = new TextField();
-				ti.percentWidth = 90;
-				ti.placeholder = "input value";
-				ti.onChange = _ -> rowData.value = ti.text;
+				ti.percentWidth = 100;
+				ti.text = field.value;
+				ti.onChange = _ -> field.value = ti.text;
 				valueInput = ti;
-
 			case "text":
 				var ta = new TextArea();
 				ta.percentWidth = 100;
-				ta.placeholder = "input value";
 				ta.height = 60;
-				ta.onChange = _ -> rowData.value = ta.text;
+				ta.text = field.value;
+				ta.onChange = _ -> field.value = ta.text;
 				valueInput = ta;
-
 			case "boolean":
 				var cb = new CheckBox();
-				cb.onChange = _ -> rowData.value = cb.selected;
+				cb.selected = field.value;
+				cb.onChange = _ -> field.value = cb.selected;
 				valueInput = cb;
+			case "data":
+				var portData = {
+					id: field.portId,
+					name: field.key,
+					direction: PortDirection.Output,
+					isMain: false,
+				};
+				portView = new PortView(this, portData, null, onConnectionStart, onConnectionFinish);
 		}
 
 		if (valueInput != null)
-			grid.addComponent(valueInput);
+			valueContainer.addComponent(valueInput);
+		grid.addComponent(valueContainer);
 
-		// Delete button
 		var delBtn = new Button();
 		delBtn.text = "X";
 		delBtn.onClick = _ -> {
 			fieldContainer.removeComponent(grid);
-			for (i in 0...data.fields.length) {
-				if (data.fields[i] == rowData) {
-					data.fields.splice(i, 1);
-					break;
-				}
-			}
-		}
+			data.fields.remove(field);
+			this.validateNow();
+			var cleanupId = (portView != null) ? portView.data.id : '';
+			if (onRemoveConnectedEdges != null)
+				onRemoveConnectedEdges(this, cleanupId);
+		};
 		grid.addComponent(delBtn);
 
-		if (type == 'data') {
-			var portData = {
-				id: uuid(),
-				name: keyInput.text,
-				direction: PortDirection.Output,
-				isMain: false,
-			};
-			// data.ports.push(portData);
-			rowData.portId = portData.id;
+		var portContainer = new Box();
+		portContainer.width = 10;
+		portContainer.percentHeight = 100;
+		if (portView != null) {
+			portView.horizontalAlign = "right";
+			portView.verticalAlign = "center";
 
-			valueInput = null;
-			var pv = new PortView(this, portData, null, onConnectionStart, onConnectionFinish);
-			grid.addComponent(pv);
+			portView.left = 10;
+			portContainer.addComponent(portView);
 		}
+		grid.addComponent(portContainer);
 
 		fieldContainer.addComponent(grid);
-
-		if (data.fields == null)
-			data.fields = [];
-		data.fields.push(rowData);
 	}
 
-	// -----------------------------------------------------------
-	// Ports / Connectors
-	// -----------------------------------------------------------
-	public function addPort(id:String, name:String, ?direction:PortDirection = PortDirection.Output) {
+	public function addPort(id:String, name:String, ?direction:PortDirection = PortDirection.Output, isMain:Bool = false) {
 		var portData = {
 			id: id,
 			name: name,
 			direction: direction,
-			isMain: false,
+			isMain: isMain
 		};
-		// data.ports.push(portData);
 		var pv = new PortView(this, portData, null, onConnectionStart, onConnectionFinish);
+
+		if (isMain) {
+			pv.includeInLayout = false;
+			if (direction == PortDirection.Input) {
+				pv.left = -pv.width / 2;
+				pv.top = 10;
+			} else {
+				pv.registerEvent(UIEvent.READY, _ -> {
+					pv.left = this.width - (pv.width / 2);
+					pv.top = 10;
+				});
+			}
+		}
+
 		addComponent(pv);
 		return pv;
-	}
-
-	public function hasPort(portId:String):Bool {
-		return getPortViewRecursive(this, portId) != null;
-	}
-
-	public function removeConnection(c:ConnectionData) {
-		if (onRemoveConnection != null)
-			onRemoveConnection(c);
 	}
 
 	public function getPortView(portId:String):PortView {
@@ -341,27 +220,17 @@ class NodeView extends VBox {
 	}
 
 	private function updatePortsRecursive(c:Component):Void {
-		if (Std.isOfType(c, PortView)) {
-			c.invalidate(); // or cast to PortView if needed
-		}
-		for (child in c.childComponents) {
+		if (Std.isOfType(c, PortView))
+			c.invalidate();
+		for (child in c.childComponents)
 			updatePortsRecursive(child);
-		}
 	}
 
-	// Returns absolute canvas position of a port
 	public function getPortPosition(portId:String):Point {
 		var pv = getPortView(portId);
-		if (pv == null)
-			return new Point(x + width / 2, y + height / 2);
-		return pv.center();
+		return (pv == null) ? new Point(x + width / 2, y + height / 2) : pv.center();
 	}
 
-	// haxe macro to generate this for you
-	// @:bind(fn, MouseEvent.CLICK/whatever other event)
-	// -----------------------------------------------------------
-	// Selection
-	// -----------------------------------------------------------
 	public function setSelected(s:Bool):Void {
 		selected = s;
 		if (selected)
@@ -375,5 +244,43 @@ class NodeView extends VBox {
 		e.cancel();
 		if (onNodeClicked != null)
 			onNodeClicked(e, this);
+	}
+
+	override function onResized() {
+		super.onResized();
+		for (child in childComponents) {
+			if (Std.isOfType(child, PortView)) {
+				var pv:PortView = cast child;
+				if (pv.data.isMain && pv.data.direction == PortDirection.Output) {
+					pv.left = this.width - (pv.width / 2);
+				}
+			}
+		}
+	}
+
+	public function hasPort(portId:String):Bool {
+		return getPortViewRecursive(this, portId) != null;
+	}
+
+	public function removeConnection(c:ConnectionData) {
+		if (onRemoveConnection != null)
+			onRemoveConnection(c);
+	}
+
+	public function rebuildFields():Void {
+		if (fieldContainer == null)
+			return;
+
+		fieldContainer.removeAllComponents();
+		populateFields();
+		updatePorts(); // Refresh port positions/states
+	}
+
+	private function populateFields():Void {
+		if (data.fields != null) {
+			for (field in data.fields) {
+				createFieldRow(field);
+			}
+		}
 	}
 }

@@ -73,6 +73,7 @@ class NodeCanvas extends Absolute {
 	public var onRequestSave:() -> Void;
 
 	public var onRemoveConnection:(ConnectionData) -> Void;
+	public var onRemoveConnectedEdges:(String, String) -> Void;
 	public var connectPorts:(NodeData, PortData, NodeData, PortData) -> ConnectionData;
 
 	public function new() {
@@ -359,10 +360,12 @@ class NodeCanvas extends Absolute {
 			for (c in connections)
 				c.updateBezier(this);
 		} else {
-			for (c in ConnectionHelpers.getEdgesInto(node, edgesIntoMap))
+			for (c in ConnectionHelpers.getEdgesInto(node.data.id, edgesIntoMap)){
 				c.updateBezier(this);
-			for (c in ConnectionHelpers.getEdgesOut(node, edgesOutMap))
+			}
+			for (c in ConnectionHelpers.getEdgesOut(node.data.id, edgesOutMap)){
 				c.updateBezier(this);
+			}
 		}
 	}
 

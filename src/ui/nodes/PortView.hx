@@ -41,7 +41,7 @@ class PortView extends HBox {
 		// addComponent(label);
 
 		connectBtn = new Button();
-		connectBtn.text = "●";
+		// connectBtn.text = "●";
 		connectBtn.addClass("port-button");
 		addComponent(connectBtn);
 

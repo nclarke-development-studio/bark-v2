@@ -3,7 +3,8 @@
   border-radius: 6px;
   border-width: 1;
   border-color: black;
-  padding: 6px;
+  padding: 18px;
+  min-width: 400px;
   cursor: move;
 }
 
@@ -54,4 +55,29 @@
 .menu-item-button:hover {
     background-color: #3d3d3d;
     cursor: pointer;
+}
+
+.port-button {
+    width: 12px;
+    height: 12px;
+    border-radius: 6px; /* Half of width/height for a circle */
+    background-color: white; /* Dark outer circle */
+    border: 1px solid #222222;
+    padding: 0;
+	z-index: 100;
+}
+
+.port-button:hover {
+    background-color: #a1f1ff;
+    cursor: pointer;
+}
+
+/* To get the "dot in the middle" effect without text */
+.port-button .button-label {
+    background-color: #00ffcc; /* The inner dot color */
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    margin: auto; /* Centers the dot */
+    display: block;
 }

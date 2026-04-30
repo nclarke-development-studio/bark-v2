@@ -1,5 +1,8 @@
 package ui.menus;
 
+import util.StressTest;
+import haxe.ui.notifications.NotificationType;
+import haxe.ui.notifications.NotificationManager;
 import data.PortData.PortDirection;
 import haxe.ui.util.GUID;
 import core.EditorSession;
@@ -39,6 +42,17 @@ class GraphContextMenu extends ContextMenu {
 
 		addItem("Save Scene", e -> {
 			session.saveScene();
+		});
+
+		addItem("Run Stress Test (100)", e -> {
+			var data = StressTest.generate(100);
+			session.addNodes(data.nodes);
+
+			NotificationManager.instance.addNotification({
+				title: "Stress Test Started",
+				body: "Generated 100 nodes and 99 connections.",
+				type: NotificationType.Info
+			});
 		});
 	}
 

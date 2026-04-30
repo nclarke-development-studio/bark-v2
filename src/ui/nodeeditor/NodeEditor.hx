@@ -89,7 +89,7 @@ class NodeEditor extends Dialog {
 	}
 
 	function populateCenter():Void {
-		var editor = new NodeDataEditor(focused.data);
+		var editor = new NodeDataEditor(focused);
 		editor.percentWidth = 100;
 		editor.onLayoutChanged = () -> {
 			// sync canvas layout
