@@ -28,7 +28,7 @@ class CanvasSelection {
 		selectionArea = new Canvas();
 		selectionArea.percentWidth = selectionArea.percentHeight = 100;
 		selectionArea.visible = false;
-		// selectionArea.mouseEnabled = false;
+		selectionArea.mouseEnabled = false; // to allow the nodes underneath to be selected for group drag
 
 		selectionArea.onRightClick = function(e:MouseEvent) {
 			e.cancel();
@@ -36,6 +36,10 @@ class CanvasSelection {
 				onRequestContextMenu(canvas, canvas.selectedNodes, e.localX, e.localY);
 			}
 		}
+
+		// selectionArea.registerEvent(MouseEvent.MOUSE_DOWN, e -> {
+		// 	e.bubble = true;
+		// });
 	}
 
 	public function beginSelection(x:Float, y:Float) {
@@ -109,8 +113,6 @@ class CanvasSelection {
 		movingSelectedNodes = true;
 		lastMousePos = new Point(startX, startY);
 	}
-
-	// Inside CanvasSelection.hx
 
 	public function updateMove(currentX:Float, currentY:Float) {
 		if (!movingSelectedNodes)

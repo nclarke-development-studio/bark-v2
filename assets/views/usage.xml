@@ -1,0 +1,51 @@
+<tabview width="500px" height="500px">
+    <vbox text="Workspace" style="padding: 15px; spacing: 10px;">
+        <label text="The Hierarchy" style="font-weight: bold; font-size: 14px;" />
+        <label text="• Workspace: A project file containing global variables and multiple scenes.&#10;• Scene: A single node graph (e.g., a specific conversation or level logic)." 
+               width="100%" wordWrap="true" />
+        <spacer height="5px" />
+        <label text="Saving and Loading" style="font-weight: bold; font-size: 14px;" />
+        <label text="You can save the entire Workspace to keep all scenes together, or export individual scenes as standalone JSON files." 
+               width="100%" wordWrap="true" />
+    </vbox>
+
+    <vbox text="Nodes" style="padding: 15px; spacing: 8px;">
+        <label text="Field Types" style="font-weight: bold; font-size: 14px;" />
+        <label text="Nodes support various data types for dialogue logic:" width="100%" />
+        <grid columns="2" width="100%" style="horizontal-spacing: 20px;">
+            <label text="String / Big Text" style="font-weight: bold;" />
+            <label text="Short IDs vs long dialogue blocks." />
+            
+            <label text="Number / Bool" style="font-weight: bold;" />
+            <label text="For flags, counters, or math logic." />
+            
+            <label text="Port" style="font-weight: bold;" />
+            <label text="Connects this field to another node." />
+            
+            <label text="Custom" style="font-weight: bold;" />
+            <label text="References Workspace variables." />
+        </grid>
+        <label text="Right-click a node to edit these fields in detail." 
+               style="font-style: italic; opacity: 0.8; padding-top: 10px;" />
+    </vbox>
+
+    <vbox text="Relational Logic" style="padding: 15px; spacing: 10px;">
+        <label text="Edge Data" style="font-weight: bold; font-size: 14px;" />
+        <label text="Unlike standard flowcharts, Bark edges can hold their own data. This is useful for 'Choice' text or 'Requirements' (e.g., if a player has an item)." 
+               width="100%" wordWrap="true" />
+        
+        <label text="Ports &amp; Connections" style="font-weight: bold; font-size: 14px;" />
+        <label text="Drag from an output port to an input port. Ports can be 'Fixed' or dynamically added via the node inspector." 
+               width="100%" wordWrap="true" />
+    </vbox>
+
+    <vbox text="Export" style="padding: 15px; spacing: 10px;">
+        <label text="JSON Structure" style="font-weight: bold; font-size: 14px;" />
+        <label text="When you export a Workspace, the editor creates a folder containing:" width="100%" />
+        <label text="1. workspace.json (Global variables and metadata)&#10;2. /scenes (One JSON file per node graph)" 
+               style="padding-left: 10px; font-family: monospace;" />
+        <spacer height="10px" />
+        <label text="This relational structure makes it easy for game engines to load only the scenes they need." 
+               width="100%" wordWrap="true" />
+    </vbox>
+</tabview>

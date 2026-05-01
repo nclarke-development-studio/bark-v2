@@ -201,35 +201,23 @@ class NodeCanvas extends Absolute {
 				var mouseX = Screen.instance.currentMouseX - this.screenLeft;
 				var mouseY = Screen.instance.currentMouseY - this.screenTop;
 				onRequestCanvasContextMenu(this, mouseX, mouseY);
-			// case KeyCodes.S:
-			// 	if (e.ctrlKey) {
-			// 		if (onRequestSave != null) {
-			// 			onRequestSave();
-			// 		}
-			// 	}
 			case KeyCodes.Z:
 				if (e.ctrlKey) {
 					if (onRequestUndo != null) {
 						onRequestUndo();
 					}
 				}
-
 			case KeyCodes.Y:
 				if (e.ctrlKey) {
 					if (onRequestRedo != null) {
 						onRequestRedo();
 					}
 				}
-
 			case KeyCodes.DELETE:
 				onRequestNodesDelete(selectedNodes);
 				selection.endSelection();
-
 		}
 	}
-
-
-
 
 	@:bind(this, MouseEvent.MOUSE_DOWN)
 	function onMouseDown(e:MouseEvent) {
@@ -373,6 +361,7 @@ class NodeCanvas extends Absolute {
 		graphSync.rebuild(g);
 	}
 
+	// TODO: hit empty space is not useful
 	function hitEmptySpace(e:MouseEvent):Bool {
 		return e.target == this || e.target == contentLayer;
 	}

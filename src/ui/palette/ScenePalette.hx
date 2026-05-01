@@ -14,6 +14,7 @@ class ScenePalette extends VBox {
 
 		text = "Scenes";
 		percentHeight = 100;
+		percentWidth = 100;
 		verticalSpacing = 4;
 	}
 

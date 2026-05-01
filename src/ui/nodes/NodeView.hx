@@ -160,10 +160,13 @@ class NodeView extends VBox {
 		portContainer.width = 10;
 		portContainer.percentHeight = 100;
 		if (portView != null) {
-			portView.horizontalAlign = "right";
-			portView.verticalAlign = "center";
+			// portView.horizontalAlign = "right";
+			// portView.verticalAlign = "center";
 
-			portView.left = 10;
+			// TODO: don't hardcode these somehow
+			portView.includeInLayout = false;
+			portView.left = 20;
+			portView.top = 10 - portView.height/2;
 			portContainer.addComponent(portView);
 		}
 		grid.addComponent(portContainer);
@@ -183,7 +186,9 @@ class NodeView extends VBox {
 		if (isMain) {
 			pv.includeInLayout = false;
 			if (direction == PortDirection.Input) {
-				pv.left = -pv.width / 2;
+				// pv.left = -pv.width / 2;
+				// TODO: don't hardcode this
+				pv.left = -5;
 				pv.top = 10;
 			} else {
 				pv.registerEvent(UIEvent.READY, _ -> {
@@ -251,7 +256,7 @@ class NodeView extends VBox {
 		for (child in childComponents) {
 			if (Std.isOfType(child, PortView)) {
 				var pv:PortView = cast child;
-				if (pv.data.isMain && pv.data.direction == PortDirection.Output) {
+				if (pv.data.direction == PortDirection.Output) {
 					pv.left = this.width - (pv.width / 2);
 				}
 			}
@@ -273,7 +278,7 @@ class NodeView extends VBox {
 
 		fieldContainer.removeAllComponents();
 		populateFields();
-		updatePorts(); // Refresh port positions/states
+		updatePorts();
 	}
 
 	private function populateFields():Void {

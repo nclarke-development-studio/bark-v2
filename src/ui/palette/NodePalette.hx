@@ -28,6 +28,10 @@ class NodePalette extends VBox {
 
 		text = "Nodes";
 		percentHeight = 100;
+		percentWidth = 100;
+
+		padding = 0;
+		verticalSpacing = 0;
 
 		loadSchemas();
 	}
@@ -76,7 +80,8 @@ class NodePalette extends VBox {
 
 		var builtInContainer = new Collapsible();
 		builtInContainer.text = "Builtin Nodes";
-		builtInContainer.width = 200;
+		builtInContainer.percentWidth = 100;
+		builtInContainer.paddingLeft = 0;
 
 		for (schema in builtInSchemas) {
 			var btn = new Button();
@@ -91,7 +96,7 @@ class NodePalette extends VBox {
 
 		var customContainer = new Collapsible();
 		customContainer.text = "Workspace Nodes";
-		customContainer.width = 200;
+		customContainer.percentWidth = 100;
 		for (schema in workspace.schemas) {
 			var btn = new Button();
 			btn.text = schema.name;
@@ -102,6 +107,7 @@ class NodePalette extends VBox {
 		}
 		if (showCreateNodeButton) {
 			var addBtn = new Button();
+			addBtn.percentWidth = 100;
 			addBtn.text = "+ Create Node";
 			addBtn.onClick = _ -> {
 				if (onRequestSchemaMode != null) {

@@ -51,7 +51,7 @@ class NodeDataEditor extends VBox {
 		var keyInput = new TextField();
 		keyInput.text = field.key;
 		keyInput.placeholder = "Key";
-		keyInput.percentWidth = 90;
+		keyInput.percentWidth = 100;
 		keyInput.onChange = _ -> {
 			field.key = keyInput.text;
 			triggerLayout();
@@ -64,6 +64,7 @@ class NodeDataEditor extends VBox {
 		switch (field.type) {
 			case "string", "number":
 				var ti = new TextField();
+				ti.percentWidth = 100;
 				ti.text = field.value;
 				ti.onChange = _ -> {
 					field.value = ti.text;
@@ -75,6 +76,7 @@ class NodeDataEditor extends VBox {
 			case "text":
 				var ta = new TextArea();
 				ta.text = field.value;
+				ta.percentWidth = 100;
 				ta.height = 60;
 				ta.onChange = _ -> {
 					field.value = ta.text;
@@ -131,6 +133,7 @@ class NodeDataEditor extends VBox {
 	function addFieldButtons():Void {
 		var box = new HBox();
 		box.percentWidth = 100;
+		box.continuous = true;
 
 		addBtn(box, "String", () -> addField("string"));
 		addBtn(box, "Text", () -> addField("text"));

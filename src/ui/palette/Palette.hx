@@ -26,6 +26,7 @@ class Palette extends VBox {
 
 		tabs = new TabView();
 		tabs.percentWidth = 100;
+		tabs.percentHeight = 100;
 		tabs.padding = 0;
 
 		nodePalette = new NodePalette();
