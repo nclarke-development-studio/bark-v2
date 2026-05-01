@@ -64,8 +64,8 @@ class CanvasGraphSync {
 						canvas.onRemoveConnection(c);
 					}
 				}
-				
-				nv.onRemoveConnectedEdges = (n:NodeView, handleId: String) -> {
+
+				nv.onRemoveConnectedEdges = (n:NodeView, handleId:String) -> {
 					if (canvas.onRemoveConnectedEdges != null) {
 						canvas.onRemoveConnectedEdges(n.data.id, handleId);
 						canvas.refreshConnections(n);
@@ -125,7 +125,10 @@ class CanvasGraphSync {
 				if (fromNode != null && toNode != null) {
 					cv = new ConnectionView(fromNode, toNode, connData);
 
-					cv.onRequestContextMenu = (c, x, y) -> {
+					cv.onRequestContextMenu = (c) -> {
+						var x = Screen.instance.currentMouseX - canvas.screenLeft;
+						var y = Screen.instance.currentMouseY - canvas.screenTop;
+
 						if (canvas.onRequestConnectionContextMenu != null) {
 							canvas.onRequestConnectionContextMenu(c, x, y);
 						}
