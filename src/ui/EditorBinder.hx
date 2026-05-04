@@ -93,6 +93,10 @@ class EditorBinder {
 				canvas.addComponent(selectionContextMenu);
 			}
 
+			canvas.onRequestIDChange = (view, oldId, newId) -> {
+				return session.updateNodeId(oldId, newId);
+			};
+
 			canvas.onRequestNodesDelete = (nodes:Array<NodeView>) -> {
 				var ids = nodes.map(n -> n.data.id);
 				session.removeNodes(ids);

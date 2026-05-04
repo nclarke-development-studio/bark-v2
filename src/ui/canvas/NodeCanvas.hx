@@ -64,6 +64,7 @@ class NodeCanvas extends Absolute {
 	public var onRequestNodeContextMenu:(NodeView, x:Float, y:Float) -> Void;
 	public var onRequestConnectionContextMenu:(ConnectionData, x:Float, y:Float) -> Void;
 	public var onRequestSelectionContextMenu:(NodeCanvas, Array<NodeView>, x:Float, y:Float) -> Void;
+	public var onRequestIDChange:(node:NodeView, oldId:String, newId:String) -> Bool;
 
 	public var onRequestNodeCreate:(node:NodeGroupSchema, x:Float, y:Float) -> Array<NodeData>;
 	public var onRequestNodesDelete:(Array<NodeView>) -> Void;
@@ -182,7 +183,7 @@ class NodeCanvas extends Absolute {
 	private function onKeyDown(e:KeyboardEvent) {
 		// to determine if this is the active node canvas
 		var top = haxe.ui.core.Screen.instance.topComponent;
-		
+
 		var currentFocus = FocusManager.instance.focus;
 
 		if (currentFocus == null && top != null && !top.containsComponent(this) && top != this) {
@@ -245,12 +246,27 @@ class NodeCanvas extends Absolute {
 		}
 	}
 
+	@:bind(this, MouseEvent.MOUSE_OUT)
+	function onMouseLeave(e:MouseEvent) {
+		var isOutside = (e.screenX < this.screenLeft
+			|| e.screenX > this.screenLeft + this.actualComponentWidth
+			|| e.screenY < this.screenTop
+			|| e.screenY > this.screenTop + this.actualComponentHeight);
+
+		if (isOutside) {
+			clearSelection();
+			selection.endSelection();
+			selection.endMove();
+		}
+	}
+
 	@:bind(this, MouseEvent.MOUSE_UP)
 	function onMouseUp(e:MouseEvent) {
 		selection.endSelection();
 		selection.endMove();
 		// if we're dragging, we need to create a new node at this point
 		if (connectionPreview.pendingPort != null && hitEmptySpace(e)) {
+			clearSelection();
 			var s:NodeGroupSchema = {
 				name: 'Basic Node',
 				color: 'green',
@@ -348,10 +364,10 @@ class NodeCanvas extends Absolute {
 			for (c in connections)
 				c.updateBezier(this);
 		} else {
-			for (c in ConnectionHelpers.getEdgesInto(node.data.id, edgesIntoMap)){
+			for (c in ConnectionHelpers.getEdgesInto(node.data.id, edgesIntoMap)) {
 				c.updateBezier(this);
 			}
-			for (c in ConnectionHelpers.getEdgesOut(node.data.id, edgesOutMap)){
+			for (c in ConnectionHelpers.getEdgesOut(node.data.id, edgesOutMap)) {
 				c.updateBezier(this);
 			}
 		}

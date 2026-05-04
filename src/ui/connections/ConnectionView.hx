@@ -37,7 +37,7 @@ class ConnectionView extends Canvas {
 		top = 0;
 
 		midButton = new Button();
-		midButton.text = "⚙"; // or any symbol
+		midButton.text = "X";
 		midButton.width = 20;
 		midButton.height = 20;
 
@@ -60,9 +60,6 @@ class ConnectionView extends Canvas {
 		return data.id;
 	}
 
-	/**
-	 * Recompute control points and redraw the Bezier only if changed.
-	 */
 	public function updateBezier(c:NodeCanvas):Void {
 		redraw(c);
 	}
@@ -84,12 +81,12 @@ class ConnectionView extends Canvas {
 		c2x = ex - dx;
 		c2y = ey;
 
-		graphics.lineStyle(2, 0x00FF00, 1);
+		graphics.lineStyle(2, 0x00E1FF, 1);
 		graphics.moveTo(sx, sy);
 		graphics.cubicCurveTo(c1x, c1y, c2x, c2y, ex, ey);
 		graphics.endFill();
 
-		// Update mid-button relative to the Canvas
+		// update mid-button relative to the Canvas
 		if (midButton != null) {
 			var midpoint = getMidPoint();
 

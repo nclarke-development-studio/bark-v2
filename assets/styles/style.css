@@ -8,14 +8,24 @@
   cursor: move;
 }
 
-.node.selected{
-	background-color: #a7a7a7;
+.node.selected {
+  background-color: #a7a7a7;
 }
 
 .node-header {
   /* color: white; */
   font-weight: bold;
   cursor: move;
+}
+
+.node-id-container {
+  background-color: #f0f0f0;
+  padding: 2px;
+  border-bottom: 1px solid #ccc;
+}
+.node-id-container .button {
+  font-size: 10px;
+  padding: 2px 5px;
 }
 
 .connector-main {
@@ -34,50 +44,48 @@
   font-weight: bold;
 }
 
-
 .custom-context-menu {
-    background-color: #2b2b2b;
-    border: 1px solid #444444;
-    padding: 2px;
-    filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.5));
-    min-width: 150px;
+  background-color: #2b2b2b;
+  border: 1px solid #444444;
+  padding: 2px;
+  filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, 0.5));
+  min-width: 150px;
 }
 
 .menu-item-button {
-    background: #2b2b2b;
-    border: none;
-    text-align: left;
-    padding: 5px 10px;
-    color: #eeeeee;
-	cursor: pointer;
+  background: #2b2b2b;
+  border: none;
+  text-align: left;
+  padding: 5px 10px;
+  color: #eeeeee;
+  cursor: pointer;
 }
 
 .menu-item-button:hover {
-    background-color: #3d3d3d;
-    cursor: pointer;
+  background-color: #3d3d3d;
+  cursor: pointer;
 }
 
 .port-button {
-    width: 12px;
-    height: 12px;
-    border-radius: 6px; /* Half of width/height for a circle */
-    background-color: white; /* Dark outer circle */
-    border: 1px solid #222222;
-    padding: 0;
-	z-index: 100;
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+  background-color: white;
+  border: 1px solid #222222;
+  padding: 0;
+  z-index: 100;
 }
 
 .port-button:hover {
-    background-color: #a1f1ff;
-    cursor: pointer;
+  background-color: #a1f1ff;
+  cursor: pointer;
 }
 
-/* To get the "dot in the middle" effect without text */
 .port-button .button-label {
-    background-color: #00ffcc; /* The inner dot color */
-    width: 6px;
-    height: 6px;
-    border-radius: 3px;
-    margin: auto; /* Centers the dot */
-    display: block;
+  background-color: #00ffcc;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  margin: auto;
+  display: block;
 }

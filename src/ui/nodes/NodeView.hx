@@ -1,5 +1,7 @@
 package ui.nodes;
 
+import haxe.ui.notifications.NotificationManager;
+import haxe.ui.notifications.NotificationType;
 import haxe.ui.events.MouseEvent;
 import haxe.ui.events.UIEvent;
 import haxe.ui.core.Component;
@@ -12,14 +14,19 @@ import data.PortData.PortDirection;
 import data.NodeData;
 import ui.nodes.PortView;
 
+using haxe.ui.animation.AnimationTools;
+
 class NodeView extends VBox {
 	public var selected:Bool = false;
 	public var data:NodeData;
 	public var fieldContainer:VBox;
+	// TODO: bit of a hack here
+	public var idInput:TextField;
 
 	// Callbacks
 	public var onRequestContextMenu:(n:NodeView) -> Void;
 	public var onRemoveConnection:(c:ConnectionData) -> Void;
+	public var onRequestIDChange:(node:NodeView, newId:String) -> Bool;
 	public var onRemoveConnectedEdges:(nodeView:NodeView, handleId:String) -> Void;
 	public var onNodeClicked:(e:MouseEvent, n:NodeView) -> Void;
 	public var onConnectionStart:(PortView, MouseEvent) -> Void;
@@ -31,6 +38,55 @@ class NodeView extends VBox {
 		addClass("node");
 		top = data.y;
 		left = data.x;
+
+		var idRow = new HBox();
+		idRow.percentWidth = 100;
+		idRow.addClass("node-id-container");
+
+		idInput = new TextField();
+		idInput.text = data.id;
+		idInput.placeholder = "Node ID";
+		idInput.disabled = true; // Locked by default
+		idInput.percentWidth = 100;
+
+		var lockBtn = new Button();
+		lockBtn.text = "Unlock";
+		lockBtn.onClick = _ -> {
+			if (idInput.disabled) {
+				idInput.disabled = false;
+				lockBtn.text = "Apply";
+				idInput.focus = true;
+			} else {
+				// Attempt to apply change
+				if (idInput.text != data.id && onRequestIDChange != null) {
+					var success = onRequestIDChange(this, idInput.text);
+					if (success) {
+						idInput.disabled = true;
+						lockBtn.text = "Unlock";
+					} else {
+						idInput.shake();
+						NotificationManager.instance.addNotification({
+							title: "Duplicate Node ID",
+							body: 'A node with the id <' + idInput.text + '> already exists',
+							type: NotificationType.Error
+						});
+						// Reset if rejected (e.g., ID already exists)
+						idInput.text = data.id;
+						idInput.disabled = true;
+						lockBtn.text = "Unlock";
+					}
+				} else {
+					// No change made
+					idInput.disabled = true;
+					lockBtn.text = "Unlock";
+				}
+			}
+		};
+
+		idRow.addComponent(idInput);
+		idRow.addComponent(lockBtn);
+		addComponent(idRow);
+		// -----------------------
 
 		var header = new Label();
 		header.text = data.type;
@@ -166,7 +222,7 @@ class NodeView extends VBox {
 			// TODO: don't hardcode these somehow
 			portView.includeInLayout = false;
 			portView.left = 20;
-			portView.top = 10 - portView.height/2;
+			portView.top = 10 - portView.height / 2;
 			portContainer.addComponent(portView);
 		}
 		grid.addComponent(portContainer);

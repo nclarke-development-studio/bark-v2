@@ -65,6 +65,13 @@ class CanvasGraphSync {
 					}
 				}
 
+				nv.onRequestIDChange = (view, newId) -> {
+					if (canvas.onRequestIDChange != null) {
+						return canvas.onRequestIDChange(view, view.data.id, newId);
+					}
+					return false;
+				}
+
 				nv.onRemoveConnectedEdges = (n:NodeView, handleId:String) -> {
 					if (canvas.onRemoveConnectedEdges != null) {
 						canvas.onRemoveConnectedEdges(n.data.id, handleId);

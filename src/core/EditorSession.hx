@@ -40,6 +40,7 @@ interface IEditorSession {
 	function removeNodes(ids:Array<String>):Void;
 	function duplicateNode(d:NodeData):Void;
 	function duplicateNodes(d:Array<NodeData>):Void;
+	function updateNodeId(oldId:String, newId:String):Bool;
 
 	function connectPorts(n1:NodeData, p1:PortData, n2:NodeData, p2:PortData):ConnectionData;
 	function addConnection(c:ConnectionData):Void;
@@ -189,10 +190,10 @@ class EditorSession implements IEditorSession {
 		history.execute(cmd);
 		notify(GraphChanged);
 	}
-	
+
 	public function duplicateNodes(d:Array<NodeData>) {
 		var nodes = [];
-		for(node in d){
+		for (node in d) {
 			var newPorts = node.ports.map(p -> {
 				return {
 					id: GUID.uuid(),
@@ -201,9 +202,9 @@ class EditorSession implements IEditorSession {
 					isMain: p.isMain
 				};
 			});
-	
+
 			// TODO: Deep copy fields
-	
+
 			var copyData = {
 				id: GUID.uuid(),
 				type: node.type,
@@ -219,6 +220,34 @@ class EditorSession implements IEditorSession {
 		var cmd = new AddNodesCommand(graph, nodes);
 		history.execute(cmd);
 		notify(GraphChanged);
+	}
+
+	public function updateNodeId(oldId:String, newId:String):Bool {
+		if (newId == null || newId == "" || oldId == newId)
+			return false;
+
+		for (node in graph.data.nodes) {
+			if (node.id == newId) {
+				trace("Error: Node ID already exists.");
+				return false;
+			}
+		}
+
+		var targetNode = graph.getNode(oldId);
+		if (targetNode == null)
+			return false;
+
+		targetNode.id = newId;
+
+		for (conn in graph.data.connections) {
+			if (conn.fromNode == oldId)
+				conn.fromNode = newId;
+			if (conn.toNode == oldId)
+				conn.toNode = newId;
+		}
+
+		notify(GraphChanged);
+		return true;
 	}
 
 	// connections ===================================================

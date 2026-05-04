@@ -90,8 +90,8 @@
       "color": "#c4cf11",
       "nodes": [
         {
-          "name": "source",
-          "type": "source",
+          "name": "sink",
+          "type": "sink",
           "color": "#6e78ff",
           "position": [0, 0],
           "ports": [
