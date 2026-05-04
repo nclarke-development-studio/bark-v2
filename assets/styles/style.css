@@ -24,7 +24,8 @@
   border-bottom: 1px solid #ccc;
 }
 .node-id-container .button {
-  font-size: 10px;
+  /* font-size: 10px; */
+  height: 100%;
   padding: 2px 5px;
 }
 
