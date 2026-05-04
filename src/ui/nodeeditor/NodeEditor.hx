@@ -96,6 +96,7 @@ class NodeEditor extends Dialog {
 						lockBtn.text = "Unlock";
 						// TODO: bit of a hack to get the text fields to sync
 						focused.idInput.text = idInput.text;
+						title = 'Node: ${idInput.text}';
 					} else {
 						idInput.shake();
 						NotificationManager.instance.addNotification({
