@@ -4,78 +4,94 @@
   <img width="300px" src="./assets/images/bark.png" alt="Bark logo" />
 </p>
 
-Relational JSON editor geared towards game dialogue editing built using [React](https://reactjs.org/), [ReactFlow](https://reactflow.dev/) and [Electron](https://www.electronjs.org/).
+Relational JSON editor geared towards game dialogue editing built using [Haxe](https://haxe.org/) and [HaxeUI](https://haxeui.org/) 
 
 # Why?
 
-I've used a handful of dialogue editors in the past and I've found that they tend to be either too rigid in their structured output or not structured much at all. I wanted to create a tool independent of any specific game engine where I could quickly define and save my own nodes to suit whatever project I'm working on.
+I've used a handful of dialogue editors in the past and I've found that they tend to be either too rigid in their structured output or they are flexible but don't have great UI/UX. I wanted to create a tool independent of any specific game engine where I could quickly define and save my own nodes to suit whatever project I'm working on.
 
-Before I started this project, I had just gotten a job working with React. I was very new to it so I wanted to work on a side project to both help me improve my React skills and be a project that I would actually use. I found a cool node library called [ReactFlow](https://reactflow.dev/) and it all went from there. I know Electron has its fair share of haters and issues and I understand that it isn't exactly the best tool for native desktop development. If I find that I run into these same issues, I may try again with Haxe or DearImgui or something. That being said, I'd probably continue to have the React version available online for anyone who wants to use it!
+This project uses [Lime](https://lime.openfl.org/) as its [backend](https://haxeui.org/getting-started/backends/) but can very easily be adapted to others.
 
 # Scripts, Build & Run
 ### Development
 ```
-yarn start:vite
+lime test hl
 ```
-To run the application in-browser
+To run the application using hashlink
 
 ```
-yarn build:electron
-yarn electron:start
-```
-To build electron and run the app inside.
-
-```
-yarn start
-```
-Builds electron, starts vite (hopefully at localhost:3000) and spins up electron
-
-```
-yarn build
-yarn electron:package:<win/mac/linux> 
+lime build hl
 ```
 
-To create an executable for the target platform. As far as I'm aware, you need to be building on the corresponding platform for it to create the executable.
+To only build to build/openfl/hl
 
 # Project Structure
 
 ```
-├── dist (created once electron:package:<platform> is run)
-    └──win-unpacked (ie: npm run electron:package:win)
-├── docs
-    └── specs.md
-├── electron
-    ├── main.ts
-    ├── preload.ts
-    └── tsconfig.json
-├── index.html
-├── package.json
-├── package-lock.json
-├── public
-    ├── builtin.json
-    ├── custom.json
-    ├── favicon.ico
-    ├── logo192.png
-    ├── logo512.png
-    ├── manifest.json
-    ├── robots.txt
-    └── theme.json
+.
+├── assets
+│   ├── components
+│   ├── icons
+│   ├── images
+│   ├── main-view.xml
+│   ├── nodes
+│   │   └── builtin.json
+│   ├── styles
+│   │   └── style.css
+│   └── views
+├── build
+│   └── openfl
+│       ├── hl
+├── module.xml
+├── Project.xml
 ├── README.md
 ├── src
-    ├── App.css
-    ├── App.tsx
-    ├── assets
-    ├── components
-    ├── contexts
-    ├── helpers
-    ├── index.css
-    ├── index.tsx
-    ├── page
-    ├── reportWebVitals.ts
-    ├── setupTests.ts
-    ├── store
-    └── tests
-├── tsconfig.json
-├── vite.config.ts
-└── vite-env.d.ts
+│   ├── core
+│   │   ├── commands
+│   │   ├── EditorSession.hx
+│   │   ├── Graph.hx
+│   │   ├── GraphSerializer.hx
+│   │   ├── History.hx
+│   │   └── Workspace.hx
+│   ├── data
+│   │   ├── ConnectionData.hx
+│   │   ├── GraphData.hx
+│   │   ├── NodeData.hx
+│   │   ├── PortData.hx
+│   │   ├── SceneData.hx
+│   │   └── WorkspaceData.hx
+│   ├── Main.hx
+│   ├── MainView.hx
+│   ├── ui
+│   │   ├── canvas
+│   │   ├── components
+│   │   ├── connectionEditor
+│   │   ├── connections
+│   │   ├── dialogs
+│   │   ├── EditorBinder.hx
+│   │   ├── menus
+│   │   ├── nodeeditor
+│   │   ├── nodes
+│   │   ├── notifications
+│   │   ├── palette
+│   │   │   ├── NodePalette.hx
+│   │   │   ├── Palette.hx
+│   │   │   ├── ScenePalette.hx
+│   │   │   └── schema
+│   │   │       ├── menus
+│   │   │       ├── SchemaEditor.hx
+│   │   │       ├── SchemaEditorBinder.hx
+│   │   │       └── SchemaEditorPalette.hx
+│   │   └── toolbar
+│   │       ├── SceneMenu.hx
+│   │       ├── Toolbar.hx
+│   │       └── WorkspaceMenu.hx
+│   └── util
+│       ├── ArrayUtils.hx
+│       ├── ConnectionHelpers.hx
+│       ├── DragUtil.hx
+│       ├── KeyCodes.hx
+│       ├── StressTest.hx
+│       └── WorkspaceUtils.hx
+
 ```
