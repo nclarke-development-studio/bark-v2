@@ -17,7 +17,9 @@ class SelectionRectContextMenu extends ContextMenu {
 		});
 
 		addItem("Duplicate Node(s)", _ -> {
-			session.duplicateNodes(nodes.map(n -> n.data));
+			var newNodes = session.duplicateNodes(nodes.map(n -> n.data));
+			c.clearSelection();
+			c.selectNodes(newNodes);
 		});
 
 		addItem("Delete Node(s)", _ -> {

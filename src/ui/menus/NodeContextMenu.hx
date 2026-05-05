@@ -22,7 +22,9 @@ class NodeContextMenu extends ContextMenu {
 		});
 
 		addItem("Duplicate Node", _ -> {
-			session.duplicateNode(node.data);
+			var createdId = session.duplicateNode(node.data);
+			canvas.clearSelection();
+			canvas.selectNodes([createdId]);
 		});
 
 		addItem("Delete Node", _ -> {

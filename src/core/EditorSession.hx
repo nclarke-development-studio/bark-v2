@@ -1,5 +1,6 @@
 package core;
 
+import util.ConnectionHelpers;
 import core.commands.ConnectMultiplePortsCommand;
 import haxe.ui.notifications.NotificationManager;
 import haxe.ui.notifications.NotificationType;
@@ -41,8 +42,8 @@ interface IEditorSession {
 	function addNodes(d:Array<NodeData>):Void;
 	function removeNode(id:String):Void;
 	function removeNodes(ids:Array<String>):Void;
-	function duplicateNode(d:NodeData):Void;
-	function duplicateNodes(d:Array<NodeData>):Void;
+	function duplicateNode(d:NodeData):String;
+	function duplicateNodes(d:Array<NodeData>):Array<String>;
 	function updateNodeId(oldId:String, newId:String):Bool;
 
 	function connectPorts(n1:NodeData, p1:PortData, n2:NodeData, p2:PortData):ConnectionData;
@@ -170,16 +171,35 @@ class EditorSession implements IEditorSession {
 	}
 
 	public function duplicateNode(d:NodeData) {
+		var portIdMap = new Map<String, String>();
+
+		// 1. Map standard ports
 		var newPorts = d.ports.map(p -> {
+			var newId = GUID.uuid();
+			portIdMap.set(p.id, newId);
 			return {
-				id: GUID.uuid(),
+				id: newId,
 				name: p.name,
 				direction: p.direction,
 				isMain: p.isMain
 			};
 		});
 
-		// TODO: Deep copy fields
+		// 2. Deep copy fields and update internal portIds
+		var newFields = [];
+		if (d.fields != null) {
+			newFields = d.fields.map(f -> {
+				var newField = Reflect.copy(f); // Shallow copy the field object
+
+				// If this field is a 'data' type with a port
+				if (f.portId != null) {
+					var newPortId = GUID.uuid();
+					portIdMap.set(f.portId, newPortId); // Map the field's port too!
+					newField.portId = newPortId;
+				}
+				return newField;
+			});
+		}
 
 		var copyData = {
 			id: GUID.uuid(),
@@ -187,43 +207,126 @@ class EditorSession implements IEditorSession {
 			x: d.x + 20,
 			y: d.y + 20,
 			ports: newPorts,
-			fields: d.fields,
+			fields: newFields, // Use the updated fields
 		};
 
+		// ... rest of your command logic ...
 		var cmd = new AddNodeCommand(graph, copyData);
 		history.execute(cmd);
+
+		// Now when these map, they will find the IDs from the fields too
+		var connectedEdgesOut = ConnectionHelpers.findOutgoingEdges(d.id, graph.data.connections).map(e -> {
+			var newEdge = Reflect.copy(e);
+			newEdge.id = GUID.uuid();
+			newEdge.fromNode = copyData.id;
+			newEdge.fromPort = portIdMap.get(e.fromPort);
+			return newEdge;
+		});
+
+		var connectedEdgesIn = ConnectionHelpers.findIncomingEdges(d.id, graph.data.connections).map(e -> {
+			var newEdge = Reflect.copy(e);
+			newEdge.id = GUID.uuid();
+			newEdge.toNode = copyData.id;
+			newEdge.toPort = portIdMap.get(e.toPort);
+			return newEdge;
+		});
+
+		var edgeCmd = new ConnectMultiplePortsCommand(graph, connectedEdgesOut.concat(connectedEdgesIn));
+		history.execute(edgeCmd);
 		notify(GraphChanged);
+
+		return copyData.id;
 	}
 
 	public function duplicateNodes(d:Array<NodeData>) {
 		var nodes = [];
+		var newEdges = [];
+
+		// Global maps to track old -> new relationships across the whole set
+		var nodeIdMap = new Map<String, String>();
+		var portIdMap = new Map<String, String>();
+
+		// Phase 1: Register all new IDs first so nodes can find each other
 		for (node in d) {
+			nodeIdMap.set(node.id, GUID.uuid());
+			for (p in node.ports) {
+				portIdMap.set(p.id, GUID.uuid());
+			}
+			if (node.fields != null) {
+				for (f in node.fields) {
+					if (f.portId != null)
+						portIdMap.set(f.portId, GUID.uuid());
+				}
+			}
+		}
+
+		// Phase 2: Create the new Node objects
+		for (node in d) {
+			var newId = nodeIdMap.get(node.id);
+
 			var newPorts = node.ports.map(p -> {
 				return {
-					id: GUID.uuid(),
+					id: portIdMap.get(p.id),
 					name: p.name,
 					direction: p.direction,
 					isMain: p.isMain
 				};
 			});
 
-			// TODO: Deep copy fields
+			var newFields = (node.fields == null) ? [] : node.fields.map(f -> {
+				var newField = Reflect.copy(f);
+				if (f.portId != null) {
+					newField.portId = portIdMap.get(f.portId);
+				}
+				return newField;
+			});
 
 			var copyData = {
-				id: GUID.uuid(),
+				id: newId,
 				type: node.type,
 				x: node.x + 20,
 				y: node.y + 20,
 				ports: newPorts,
-				fields: node.fields,
+				fields: newFields,
 			};
-
 			nodes.push(copyData);
+
+			// Phase 3: Handle Edges for this node
+			// We only look at Outgoing to avoid duplicating the same edge twice
+			// (once for the 'from' node and once for the 'to' node)
+			var outgoing = ConnectionHelpers.findOutgoingEdges(node.id, graph.data.connections);
+
+			for (e in outgoing) {
+				var newEdge = Reflect.copy(e);
+				newEdge.id = GUID.uuid();
+				newEdge.fromNode = newId;
+				newEdge.fromPort = portIdMap.get(e.fromPort);
+
+				// Check if the destination node is also being duplicated
+				if (nodeIdMap.exists(e.toNode)) {
+					newEdge.toNode = nodeIdMap.get(e.toNode);
+					newEdge.toPort = portIdMap.get(e.toPort);
+					newEdges.push(newEdge);
+				} else {
+					// Optional: If you want duplicates to stay connected to
+					// external nodes the original was connected to:
+					newEdge.toNode = e.toNode;
+					newEdges.push(newEdge);
+				}
+			}
 		}
 
+		// Phase 4: Execute Commands
 		var cmd = new AddNodesCommand(graph, nodes);
 		history.execute(cmd);
+
+		if (newEdges.length > 0) {
+			var edgeCmd = new ConnectMultiplePortsCommand(graph, newEdges);
+			history.execute(edgeCmd);
+		}
+
 		notify(GraphChanged);
+		return nodes.map(n -> n.id);
 	}
 
 	public function updateNodeId(oldId:String, newId:String):Bool {

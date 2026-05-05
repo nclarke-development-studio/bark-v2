@@ -30,16 +30,20 @@ class CanvasSelection {
 		selectionArea.visible = false;
 		selectionArea.mouseEnabled = false; // to allow the nodes underneath to be selected for group drag
 
-		selectionArea.onRightClick = function(e:MouseEvent) {
+		// selectionArea.onRightClick = function(e:MouseEvent) {
+		// 	e.cancel();
+		// 	trace('right clicked');
+		// 	if (onRequestContextMenu != null) {
+		// 		onRequestContextMenu(canvas, canvas.selectedNodes, e.localX, e.localY);
+		// 	}
+		// }
+
+		selectionArea.registerEvent(MouseEvent.RIGHT_CLICK, e -> {
 			e.cancel();
 			if (onRequestContextMenu != null) {
 				onRequestContextMenu(canvas, canvas.selectedNodes, e.localX, e.localY);
 			}
-		}
-
-		// selectionArea.registerEvent(MouseEvent.MOUSE_DOWN, e -> {
-		// 	e.bubble = true;
-		// });
+		});
 	}
 
 	public function beginSelection(x:Float, y:Float) {

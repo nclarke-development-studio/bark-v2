@@ -167,7 +167,9 @@ class NodeCanvas extends Absolute {
 
 	public function registerMouseEvents() {
 		registerEvent(MouseEvent.RIGHT_CLICK, e -> {
-			if (onRequestCanvasContextMenu != null) {
+			if (selectedNodes.length > 1 && onRequestSelectionContextMenu != null) {
+				onRequestSelectionContextMenu(this, selectedNodes, e.localX, e.localY);
+			} else if (onRequestCanvasContextMenu != null) {
 				onRequestCanvasContextMenu(this, e.localX, e.localY);
 			}
 		});
@@ -321,6 +323,15 @@ class NodeCanvas extends Absolute {
 		if (!selectedNodes.contains(n)) {
 			selectedNodes.push(n);
 			n.setSelected(true);
+		}
+	}
+
+	public function selectNodes(ids:Array<String>) {
+		for (n in nodes) {
+			if (ids.contains(n.data.id)) {
+				selectedNodes.push(n);
+				n.setSelected(true);
+			}
 		}
 	}
 

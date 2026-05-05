@@ -44,17 +44,19 @@ class GraphContextMenu extends ContextMenu {
 			session.saveScene();
 		});
 
-		addItem("Run Stress Test (100)", e -> {
-			var data = StressTest.generate(100);
-			session.addNodes(data.nodes);
-			session.addConnections(data.connections);
+		// TODO: stress test hidden for build
 
-			NotificationManager.instance.addNotification({
-				title: "Stress Test Started",
-				body: "Generated 100 nodes and 99 connections.",
-				type: NotificationType.Info
-			});
-		});
+		// addItem("Run Stress Test (100)", e -> {
+		// 	var data = StressTest.generate(100);
+		// 	session.addNodes(data.nodes);
+		// 	session.addConnections(data.connections);
+
+		// 	NotificationManager.instance.addNotification({
+		// 		title: "Stress Test Started",
+		// 		body: "Generated 100 nodes and 99 connections.",
+		// 		type: NotificationType.Info
+		// 	});
+		// });
 	}
 
 	override function close() {

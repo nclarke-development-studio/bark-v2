@@ -42,23 +42,38 @@ class SchemaEditorBinder {
 		init();
 	}
 
+	private function closeCtx() {
+		if (canvasContextMenu != null) {
+			canvasContextMenu.close();
+		}
+		if (nodeContextMenu != null) {
+			nodeContextMenu.close();
+		}
+		if (connectionContextMenu != null) {
+			connectionContextMenu.close();
+		}
+		if (selectionContextMenu != null) {
+			selectionContextMenu.close();
+		}
+	}
+
 	function init() {
 		if (canvas != null) {
 			// canvas binding
 			canvas.onRequestCanvasContextMenu = (canvas, x, y) -> {
-				if (canvasContextMenu != null) {
-					canvasContextMenu.close();
-				}
+				closeCtx();
 				canvasContextMenu = new GraphContextMenu(canvas, session, schema, close);
 				canvasContextMenu.left = x;
 				canvasContextMenu.top = y;
 				canvas.addComponent(canvasContextMenu);
 			};
 
+			canvas.onRequestIDChange = (view, oldId, newId) -> {
+				return session.updateNodeId(oldId, newId);
+			};
+
 			canvas.onRequestNodeContextMenu = (canvas, x, y) -> {
-				if (nodeContextMenu != null) {
-					nodeContextMenu.close();
-				}
+				closeCtx();
 				nodeContextMenu = new NodeContextMenu(canvas, session);
 				nodeContextMenu.left = x;
 				nodeContextMenu.top = y;
@@ -66,9 +81,7 @@ class SchemaEditorBinder {
 			}
 
 			canvas.onRequestConnectionContextMenu = (connection, x, y) -> {
-				if (connectionContextMenu != null) {
-					connectionContextMenu.close();
-				}
+				closeCtx();
 				connectionContextMenu = new ConnectionContextMenu(connection, session, canvas);
 				connectionContextMenu.left = x;
 				connectionContextMenu.top = y;
@@ -76,9 +89,7 @@ class SchemaEditorBinder {
 			}
 
 			canvas.onRequestSelectionContextMenu = (c, n, x, y) -> {
-				if (selectionContextMenu != null) {
-					selectionContextMenu.close();
-				}
+				closeCtx();
 				selectionContextMenu = new SelectionRectContextMenu(c, n, session);
 				selectionContextMenu.left = x;
 				selectionContextMenu.top = y;

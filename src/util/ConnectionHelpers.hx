@@ -43,4 +43,34 @@ class ConnectionHelpers {
 		}
 		return result;
 	}
+
+	public static function findIncomingEdges(id:String, edges:Array<ConnectionData>):Array<ConnectionData> {
+		var result:Array<ConnectionData> = [];
+
+		for (edge in edges) {
+			if (edge.toNode == id) {
+				result.push(edge);
+			}
+		}
+
+		return result;
+	}
+
+	public static function findOutgoingEdges(id:String, edges:Array<ConnectionData>):Array<ConnectionData> {
+		var result:Array<ConnectionData> = [];
+
+		for (edge in edges) {
+			if (edge.fromNode == id) {
+				result.push(edge);
+			}
+		}
+
+		return result;
+	}
+
+	public static function findConnectedEdges(id:String, edges:Array<ConnectionData>):Array<ConnectionData> {
+		var result:Array<ConnectionData> = findIncomingEdges(id, edges).concat(findOutgoingEdges(id, edges));
+
+		return result;
+	}
 }

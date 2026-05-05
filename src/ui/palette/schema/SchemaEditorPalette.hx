@@ -24,6 +24,7 @@ class SchemaEditorPalette extends VBox {
 
 		tabs = new TabView();
 		tabs.percentWidth = 100;
+		tabs.percentHeight = 100;
 		tabs.padding = 0;
 
 		nodePalette = new NodePalette(false);
@@ -34,6 +35,7 @@ class SchemaEditorPalette extends VBox {
 
 		var saveButton = new Button();
 		saveButton.text = '+ Save Schema';
+		saveButton.percentWidth = 100;
 		saveButton.onClick = _ -> onRequestSaveSchema();
 
 		addComponent(saveButton);
