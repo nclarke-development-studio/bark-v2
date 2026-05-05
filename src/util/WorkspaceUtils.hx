@@ -66,8 +66,8 @@ class WorkspaceUtils {
 	public static function encodeSchema(name:String, color:String, nodes:Array<NodeData>, connections:Array<ConnectionData>):NodeGroupSchema {
 		if (nodes == null || nodes.length == 0) {
 			NotificationManager.instance.addNotification({
-				title: "Export Failed",
-				body: "Cannot encode schema: No nodes were selected.",
+				title: "Schema Encoding Failed",
+				body: "Cannot encode schema: no nodes were selected.",
 				type: NotificationType.Error
 			});
 			return null;
@@ -145,7 +145,7 @@ class WorkspaceUtils {
 	public static function decodeSchema(schema:NodeGroupSchema, baseX:Float, baseY:Float):{nodes:Array<NodeData>, connections:Array<ConnectionData>} {
 		if (schema == null || schema.nodes == null || schema.nodes.length == 0) {
 			NotificationManager.instance.addNotification({
-				title: "Import Failed",
+				title: "Schema Decode Failed",
 				body: schema == null ? "Schema data is null." : '${schema.name} contains no nodes.',
 				type: NotificationType.Error
 			});

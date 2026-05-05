@@ -1,5 +1,7 @@
 package core;
 
+import haxe.ui.notifications.NotificationManager;
+import haxe.ui.notifications.NotificationType;
 import core.commands.RemoveConnectionsCommand;
 import ui.palette.schema.SchemaEditor;
 import core.commands.RemoveNodesCommand;
@@ -318,10 +320,25 @@ class EditorSession implements IEditorSession {
 	public function loadScene() {
 		Dialogs.openFile(function(button, files) {
 			if (button == DialogButton.OK && files.length > 0) {
-				graph.data = GraphSerializer.loadScene(files[0].fullPath);
-				history.clear();
-				notify(GraphChanged);
-				notify(WorkspaceChanged);
+				var data = GraphSerializer.loadScene(files[0].fullPath);
+
+				var filename = haxe.io.Path.withoutExtension(haxe.io.Path.withoutDirectory(files[0].fullPath));
+
+				var uniqueId = workspace.resolveIdCollision(filename);
+
+				var newScene:SceneData = {
+					id: uniqueId,
+					graph: data
+				};
+
+				workspace.addScene(newScene);
+
+				NotificationManager.instance.addNotification({
+					title: "Scene Loaded!",
+					body: 'Loaded scene data',
+					type: NotificationType.Success
+				});
+				switchScene(uniqueId);
 			}
 		}, {
 			readContents: true,
@@ -349,6 +366,12 @@ class EditorSession implements IEditorSession {
 				#end
 
 				trace("Scene saved to: " + path);
+
+				NotificationManager.instance.addNotification({
+					title: "Scene Saved!",
+					body: "Scene saved to: " + path,
+					type: NotificationType.Success
+				});
 			}
 		}, {
 			name: '${workspace.activeSceneId}.woof',
@@ -380,6 +403,12 @@ class EditorSession implements IEditorSession {
 				#end
 
 				trace("Scene saved to: " + path);
+
+				NotificationManager.instance.addNotification({
+					title: "Scene Exported!",
+					body: "Scene exported to: " + path,
+					type: NotificationType.Success
+				});
 			}
 		}, {
 			name: '${workspace.activeSceneId}.json',
@@ -459,6 +488,7 @@ class EditorSession implements IEditorSession {
 		// Serialize the whole workspace object into one JSON string
 		var data = GraphSerializer.serializeWorkspace(workspace);
 
+		// if the workspace already has a file path associated with it
 		if (filePath != null) {
 			#if nodejs
 			Fs.writeFileSync(filePath, data);
@@ -469,6 +499,12 @@ class EditorSession implements IEditorSession {
 			#end
 
 			trace("Workspace saved to: " + filePath);
+
+			NotificationManager.instance.addNotification({
+				title: "Workspace Saved!",
+				body: "Workspace saved to: " + filePath,
+				type: NotificationType.Success
+			});
 
 			return;
 		}
@@ -485,6 +521,12 @@ class EditorSession implements IEditorSession {
 				#end
 
 				trace("Workspace saved to: " + selectedPath);
+
+				NotificationManager.instance.addNotification({
+					title: "Workspace Saved!",
+					body: "Workspace saved to: " + selectedPath,
+					type: NotificationType.Success
+				});
 			}
 		}, {
 			name: '${workspace.name}.bark',
@@ -512,6 +554,12 @@ class EditorSession implements IEditorSession {
 				#end
 
 				trace("Workspace saved to: " + selectedPath);
+
+				NotificationManager.instance.addNotification({
+					title: "Workspace Saved!",
+					body: "Workspace saved to: " + selectedPath,
+					type: NotificationType.Success
+				});
 			}
 		}, {
 			name: '${workspace.name}.bark',
@@ -548,6 +596,12 @@ class EditorSession implements IEditorSession {
 				File.saveContent(path, manifest);
 				#end
 				#end
+
+				NotificationManager.instance.addNotification({
+					title: "Workspace Exported!",
+					body: "Workspace scenes exported to: " + path,
+					type: NotificationType.Success
+				});
 			}
 		}, {
 			name: '${workspace.name}.json',

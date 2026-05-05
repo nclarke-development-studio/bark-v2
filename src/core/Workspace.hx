@@ -4,28 +4,40 @@ import data.NodeData.NodeGroupSchema;
 import data.SceneData;
 
 class Workspace {
-    public var name:String;
-    public var scenes:Map<String, SceneData> = [];
-    public var activeSceneId:String;
+	public var name:String;
+	public var scenes:Map<String, SceneData> = [];
+	public var activeSceneId:String;
 	public var schemas:Array<NodeGroupSchema> = [];
 
-    public function new(?n:String) {
-        name = n;
-    }
+	public function new(?n:String) {
+		name = n;
+	}
 
-    public function getActiveScene():SceneData {
-        return scenes.get(activeSceneId);
-    }
+	public function getActiveScene():SceneData {
+		return scenes.get(activeSceneId);
+	}
 
-    public function addScene(scene:SceneData) {
-        scenes.set(scene.id, scene);
-        if (activeSceneId == null)
-            activeSceneId = scene.id;
-    }
+	public function addScene(scene:SceneData) {
+		scenes.set(scene.id, scene);
+		if (activeSceneId == null)
+			activeSceneId = scene.id;
+	}
 
-    public function removeScene(id:String) {
-        scenes.remove(id);
-        if (activeSceneId == id)
-            activeSceneId = scenes.keys().next();
-    }
+	public function resolveIdCollision(baseId:String):String {
+		var id = baseId;
+		var counter = 1;
+
+		while (scenes.exists(id)) {
+			id = baseId + "_" + counter;
+			counter++;
+		}
+
+		return id;
+	}
+
+	public function removeScene(id:String) {
+		scenes.remove(id);
+		if (activeSceneId == id)
+			activeSceneId = scenes.keys().next();
+	}
 }
