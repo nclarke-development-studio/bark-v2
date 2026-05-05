@@ -92,18 +92,6 @@ class NodeView extends VBox {
 		header.text = data.type;
 		header.addClass("node-header");
 		addComponent(header);
-	}
-
-	public function init() {
-		for (port in data.ports) {
-			addPort(port.id, port.name, port.direction, port.isMain);
-		}
-
-		registerEvent(MouseEvent.RIGHT_CLICK, e -> {
-			e.cancel();
-			if (onRequestContextMenu != null)
-				onRequestContextMenu(this);
-		});
 
 		addFieldButtons();
 
@@ -111,11 +99,48 @@ class NodeView extends VBox {
 		fieldContainer.percentWidth = 100;
 		addComponent(fieldContainer);
 
-		// Populate existing fields
-		if (data.fields != null) {
-			for (field in data.fields)
-				createFieldRow(field);
+		registerEvent(MouseEvent.RIGHT_CLICK, _onRightClick);
+	}
+
+	private function _onRightClick(e:MouseEvent) {
+		e.cancel();
+		if (onRequestContextMenu != null)
+			onRequestContextMenu(this);
+	}
+
+	public function init() {
+		fieldContainer.removeAllComponents();
+
+		var i = childComponents.length - 1;
+		while (i >= 0) {
+			if (Std.isOfType(childComponents[i], PortView)) {
+				removeComponent(childComponents[i]);
+			}
+			i--;
 		}
+
+		if (data.ports != null) {
+			for (port in data.ports) {
+				addPort(port.id, port.name, port.direction, port.isMain);
+			}
+		}
+
+		if (data.fields != null) {
+			for (field in data.fields) {
+				createFieldRow(field);
+			}
+		}
+
+		// this.validateNow();
+	}
+
+	public function refresh(newData:NodeData):Void {
+		this.data = newData;
+
+		if (idInput != null)
+			idInput.text = this.data.id;
+
+		init();
 	}
 
 	private function addFieldButtons():Void {
@@ -205,7 +230,7 @@ class NodeView extends VBox {
 		delBtn.onClick = _ -> {
 			fieldContainer.removeComponent(grid);
 			data.fields.remove(field);
-			this.validateNow();
+			// this.validateNow();
 			var cleanupId = (portView != null) ? portView.data.id : '';
 			if (onRemoveConnectedEdges != null)
 				onRemoveConnectedEdges(this, cleanupId);
@@ -242,15 +267,22 @@ class NodeView extends VBox {
 		if (isMain) {
 			pv.includeInLayout = false;
 			if (direction == PortDirection.Input) {
-				// pv.left = -pv.width / 2;
-				// TODO: don't hardcode this
 				pv.left = -5;
 				pv.top = 10;
 			} else {
-				pv.registerEvent(UIEvent.READY, _ -> {
-					pv.left = this.width - (pv.width / 2);
+				// if the node is already rendered (width > 0), position immediately
+				if (this.width > 0) {
+					// Use a default width if the port hasn't calculated its own yet
+					var pw = (pv.width > 0) ? pv.width : 10;
+					pv.left = this.width - (pw / 2);
 					pv.top = 10;
-				});
+				} else {
+					// First time creation logic
+					pv.registerEvent(UIEvent.READY, _ -> {
+						pv.left = this.width - (pv.width / 2);
+						pv.top = 10;
+					});
+				}
 			}
 		}
 

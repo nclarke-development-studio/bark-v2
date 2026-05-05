@@ -47,6 +47,7 @@ class GraphContextMenu extends ContextMenu {
 		addItem("Run Stress Test (100)", e -> {
 			var data = StressTest.generate(100);
 			session.addNodes(data.nodes);
+			session.addConnections(data.connections);
 
 			NotificationManager.instance.addNotification({
 				title: "Stress Test Started",

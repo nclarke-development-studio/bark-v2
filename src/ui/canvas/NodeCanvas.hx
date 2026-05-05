@@ -374,6 +374,9 @@ class NodeCanvas extends Absolute {
 	}
 
 	public function rebuild(g:Graph) {
+		// TODO: be careful with this, we may want to be more efficient in the graph sync but for now it's okay
+		// nodes = [];
+		// connections = [];
 		graphSync.rebuild(g);
 	}
 

@@ -1,5 +1,6 @@
 package core;
 
+import core.commands.ConnectMultiplePortsCommand;
 import haxe.ui.notifications.NotificationManager;
 import haxe.ui.notifications.NotificationType;
 import core.commands.RemoveConnectionsCommand;
@@ -46,6 +47,7 @@ interface IEditorSession {
 
 	function connectPorts(n1:NodeData, p1:PortData, n2:NodeData, p2:PortData):ConnectionData;
 	function addConnection(c:ConnectionData):Void;
+	function addConnections(c:Array<ConnectionData>):Void;
 	function removeConnection(c:ConnectionData):Void;
 
 	function undo():Void;
@@ -269,6 +271,12 @@ class EditorSession implements IEditorSession {
 
 	public function addConnection(c:ConnectionData) {
 		var cmd = new ConnectPortsCommand(graph, c);
+		history.execute(cmd);
+		notify(GraphChanged);
+	}
+
+	public function addConnections(c:Array<ConnectionData>) {
+		var cmd = new ConnectMultiplePortsCommand(graph, c);
 		history.execute(cmd);
 		notify(GraphChanged);
 	}

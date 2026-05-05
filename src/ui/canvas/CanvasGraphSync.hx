@@ -41,7 +41,7 @@ class CanvasGraphSync {
 
 		// Update or create nodeViews
 		for (nodeData in g.data.nodes) {
-			var nv = viewMap.exists(nodeData.id) ? viewMap.get(nodeData.id) : null;
+			var nv = viewMap.get(nodeData.id);
 
 			if (nv == null) {
 				nv = new NodeView(nodeData);
@@ -87,25 +87,20 @@ class CanvasGraphSync {
 					return canvas.finishConnection(pv);
 				}
 
-				// TODO: really don't like this
 				nv.init();
-
-				// make draggable with scale-aware bounds
-				// util.DragUtil.makeScaleAwareDraggable(nv, () -> canvas.zoom, canvas.contentBounds, function(x, y) {
-				// 	nv.data.x = x;
-				// 	nv.data.y = y;
-				// 	canvas.refreshConnections(nv);
-				// 	canvas.updateContentBounds();
-				// });
 
 				canvas.nodes.push(nv);
 				canvas.nodeLayer.addComponent(nv);
+			} else if(nv.data != nodeData) {
+				nv.refresh(nodeData);
 			}
 
 			nv.left = nodeData.x;
 			nv.top = nodeData.y;
-			nv.updatePorts();
+			// nv.updatePorts();
 		}
+
+		canvas.nodeLayer.validateNow();
 	}
 
 	public function syncConnections(g:Graph):Void {
