@@ -100,7 +100,8 @@ class CanvasGraphSync {
 			// nv.updatePorts();
 		}
 
-		canvas.nodeLayer.validateNow();
+		// TODO: don't think we need to actually do validation here
+		// canvas.nodeLayer.validateNow();
 	}
 
 	public function syncConnections(g:Graph):Void {
