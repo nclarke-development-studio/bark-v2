@@ -40,6 +40,7 @@ class ConnectionView extends Canvas {
 		midButton.text = "X";
 		midButton.width = 20;
 		midButton.height = 20;
+		midButton.styleString = "padding: 0px; font-size: 10px; text-align: center;";
 
 		midButton.onClick = function(_) {
 			fromNode.removeConnection(data);
