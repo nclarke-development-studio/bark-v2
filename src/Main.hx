@@ -1,6 +1,8 @@
 package;
 
 import ui.menus.GraphContextMenu;
+import ui.dialogs.UsageView;
+import haxe.ui.containers.dialogs.Dialog.DialogButton;
 import haxe.ui.events.KeyboardEvent;
 import util.KeyCodes;
 import ui.nodes.NodeFactory;
@@ -14,9 +16,11 @@ import haxe.ui.Toolkit;
 import haxe.CallStack;
 import ui.canvas.NodeCanvas;
 import haxe.ui.HaxeUIApp;
+import util.Config;
 
 class Main {
 	public static function main() {
+		Config.load();
 		Toolkit.init();
 		try {
 			var app = new HaxeUIApp();
@@ -64,11 +68,20 @@ class Main {
 					}
 				});
 
+				if (Config.current.isFirstRun) {
+					showOnboarding();
+					Config.setFirstRunComplete();
+				}
+
 				app.start();
 			});
 		} catch (e:Dynamic) {
 			trace(e);
 			trace(CallStack.toString(CallStack.exceptionStack()));
 		}
+	}
+
+	static function showOnboarding() {
+		haxe.ui.containers.dialogs.Dialogs.dialog(new UsageView(), "Bark Usage", DialogButton.OK);
 	}
 }
