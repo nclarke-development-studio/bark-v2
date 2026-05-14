@@ -1,5 +1,7 @@
 package ui.palette;
 
+import haxe.ui.components.Label;
+import haxe.ui.focus.FocusManager;
 import haxe.ui.notifications.NotificationType;
 import haxe.ui.notifications.NotificationManager;
 import core.Workspace;
@@ -12,7 +14,8 @@ import haxe.ui.components.Button;
 import haxe.ui.events.MouseEvent;
 
 class NodePalette extends VBox {
-	var dragGhost:Button = null;
+	// var dragGhost:Button = null;
+	var dragGhost:Label = null;
 	var showCreateNodeButton:Bool;
 
 	public var onNodeDrop:(nodeGroup:NodeGroupSchema, x:Float, y:Float) -> Void;
@@ -62,7 +65,6 @@ class NodePalette extends VBox {
 			}
 
 			builtInSchemas = parsed.nodes;
-
 		} catch (e:Dynamic) {
 			// 4. Catch unexpected crashes (like malformed JSON syntax)
 			NotificationManager.instance.addNotification({
@@ -85,6 +87,8 @@ class NodePalette extends VBox {
 
 		for (schema in builtInSchemas) {
 			var btn = new Button();
+			btn.allowFocus = false;
+			btn.autoFocus = false;
 			btn.text = schema.name;
 			btn.percentWidth = 100;
 
@@ -99,6 +103,8 @@ class NodePalette extends VBox {
 		customContainer.percentWidth = 100;
 		for (schema in workspace.schemas) {
 			var btn = new Button();
+			btn.allowFocus = false;
+			btn.autoFocus = false;
 			btn.text = schema.name;
 			btn.percentWidth = 100;
 
@@ -121,9 +127,16 @@ class NodePalette extends VBox {
 
 	function makeDraggable(button:Button, schema:NodeGroupSchema):Void {
 		button.registerEvent(MouseEvent.MOUSE_DOWN, function(e:MouseEvent) {
-			dragGhost = new Button();
+			// Create a Label instead of a Button
+			dragGhost = new Label();
 			dragGhost.text = button.text;
+			dragGhost.addClass("node-ghost"); 
+
+			// Ensure it doesn't intercept mouse events so the Screen can still see MOUSE_UP
+			dragGhost.mouseEnabled = false;
 			dragGhost.alpha = 0.5;
+
+			// Match dimensions
 			dragGhost.width = button.width;
 			dragGhost.height = button.height;
 
@@ -143,9 +156,8 @@ class NodePalette extends VBox {
 						onNodeDrop(schema, e.screenX, e.screenY);
 					}
 
-					// TODO: figure out the proper way to delete components, not sure hiding is best and
-					// disposeComponent doesn't seem to do anything
-					dragGhost.hide();
+					button.screen.removeComponent(dragGhost);
+					
 					dragGhost = null;
 
 					button.screen.unregisterEvent(MouseEvent.MOUSE_MOVE, mouseMoveFn);

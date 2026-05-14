@@ -29,6 +29,23 @@
   padding: 2px 5px;
 }
 
+.node-ghost {
+  background-color: #333333;
+  border: 1px solid #555555;
+  border-radius: 4px;
+  padding: 8px;
+  color: white;
+  opacity: 0.6;
+
+  /* Ensure it doesn't look like a flat text label */
+  filter: drop-shadow(4px 4px 10px rgba(0, 0, 0, 0.5));
+
+  /* Center the text inside the ghost */
+  horizontal-align: center;
+  vertical-align: center;
+  text-align: center;
+}
+
 .connector-main {
   background-color: #00ffcc;
   border-radius: 5px;
