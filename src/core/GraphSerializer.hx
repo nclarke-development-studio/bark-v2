@@ -2,7 +2,6 @@ package core;
 
 import data.*;
 import haxe.Json;
-
 #if !js
 import sys.io.File;
 #end
@@ -100,7 +99,7 @@ class GraphSerializer {
 	}
 
 	public static function serializeWorkspace(w:Workspace):String {
-		var data = {
+		var data:WorkspaceData = {
 			name: w.name,
 			activeSceneId: w.activeSceneId,
 			scenes: [for (s in w.scenes) s],
@@ -112,7 +111,6 @@ class GraphSerializer {
 	public static function exportWorkspace(w:Workspace):String {
 		var exportedScenes = [];
 		for (scene in w.scenes) {
-			// Re-use your existing export logic for each scene
 			var exportedGraph = Json.parse(export(scene.graph));
 			exportedScenes.push({
 				id: scene.id,
@@ -156,20 +154,34 @@ class GraphSerializer {
 		return deserialize(data);
 	}
 
-	public static function loadWorkspace(path:String) {
-        var data:String;
+	public static function loadWorkspace(path:String):Workspace {
+		var dataStr:String;
 
-        #if nodejs
-        data = Fs.readFileSync(path, "utf8");
-        #elseif js
-        // Note: For HaxeUI web, 'path' might be the actual JSON string 
-        // if passed from an upload dialog, or a localStorage key.
-        data = Browser.window.localStorage.getItem(path);
-        if (data == null) data = path; // Fallback if path is the data itself
-        #else
-        data = File.getContent(path);
-        #end
+		#if nodejs
+		dataStr = Fs.readFileSync(path, "utf8");
+		#elseif js
+		dataStr = Browser.window.localStorage.getItem(path);
+		if (dataStr == null)
+			dataStr = path;
+		#else
+		dataStr = File.getContent(path);
+		#end
 
-        return Json.parse(data);
-    }
+		// 1. Parse into your anonymous typedef format safely
+		var rawData:data.WorkspaceData = Json.parse(dataStr);
+
+		// 2. Build the actual runtime Workspace object instance
+		var workspace = new Workspace(rawData.name);
+		workspace.activeSceneId = rawData.activeSceneId;
+		workspace.schemas = rawData.schemas != null ? rawData.schemas : [];
+
+		// 3. Convert JSON scene array back into the Workspace's Map structure
+		if (rawData.scenes != null) {
+			for (scene in rawData.scenes) {
+				workspace.addScene(scene);
+			}
+		}
+
+		return workspace;
+	}
 }
