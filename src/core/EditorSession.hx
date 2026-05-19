@@ -624,7 +624,13 @@ class EditorSession implements IEditorSession {
 				notify(WorkspaceChanged);
 				notify(GraphChanged);
 			}
-		}, {extensions: [{label: "Bark Workspace", extension: "bark"}]});
+		}, {
+			readContents: true,
+			title: "Open",
+			readAsBinary: true,
+			multiple: false,
+			extensions: [{label: "Bark Workspace", extension: "bark"}]
+		});
 	}
 
 	public function saveWorkspace() {
