@@ -17,6 +17,9 @@ import haxe.CallStack;
 import ui.canvas.NodeCanvas;
 import haxe.ui.HaxeUIApp;
 import util.Config;
+#if js
+import js.Browser;
+#end
 
 class Main {
 	public static function main() {
@@ -72,6 +75,12 @@ class Main {
 					showOnboarding();
 					Config.setFirstRunComplete();
 				}
+
+				#if js
+				Browser.document.addEventListener("contextmenu", function(event) {
+					event.preventDefault();
+				});
+				#end
 
 				app.start();
 			});

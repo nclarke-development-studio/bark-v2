@@ -138,44 +138,38 @@ class GraphSerializer {
 		return files;
 	}
 
-	public static function loadScene(path:String):GraphData {
+	public static function loadScene(dataOrPath:String):GraphData {
 		var data:String;
 
 		#if nodejs
-		data = Fs.readFileSync(path, "utf8");
+		data = Fs.readFileSync(dataOrPath, "utf8");
 		#elseif js
-		data = Browser.window.localStorage.getItem(path);
-		if (data == null)
-			throw 'No saved data for key "$path"';
+		data = dataOrPath;
 		#else
-		data = File.getContent(path);
+		data = File.getContent(dataOrPath);
 		#end
 
 		return deserialize(data);
 	}
 
-	public static function loadWorkspace(path:String):Workspace {
+	public static function loadWorkspace(dataOrPath:String):Workspace {
 		var dataStr:String;
 
 		#if nodejs
-		dataStr = Fs.readFileSync(path, "utf8");
+		dataStr = Fs.readFileSync(dataOrPath, "utf8");
 		#elseif js
-		dataStr = Browser.window.localStorage.getItem(path);
-		if (dataStr == null)
-			dataStr = path;
+		dataStr = dataOrPath;
 		#else
-		dataStr = File.getContent(path);
+		dataStr = File.getContent(dataOrPath);
 		#end
 
-		// 1. Parse into your anonymous typedef format safely
 		var rawData:data.WorkspaceData = Json.parse(dataStr);
 
-		// 2. Build the actual runtime Workspace object instance
+		// build the actual runtime Workspace object instance
 		var workspace = new Workspace(rawData.name);
 		workspace.activeSceneId = rawData.activeSceneId;
 		workspace.schemas = rawData.schemas != null ? rawData.schemas : [];
 
-		// 3. Convert JSON scene array back into the Workspace's Map structure
 		if (rawData.scenes != null) {
 			for (scene in rawData.scenes) {
 				workspace.addScene(scene);

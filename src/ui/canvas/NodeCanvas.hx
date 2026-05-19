@@ -93,9 +93,12 @@ class NodeCanvas extends Absolute {
 		addComponent(grid);
 
 		contentLayer = new Absolute();
+		contentLayer.id = "contentLayer";
 		// contentLayer.backgroundColor = 'red';
 		contentLayer.borderColor = 'red';
 		contentLayer.borderSize = 2;
+		contentLayer.backgroundColor = null;
+		// contentLayer.backgroundColor = 'transparent';
 		addComponent(contentLayer);
 
 		edgeLayer = new Absolute();

@@ -16,7 +16,6 @@ class AboutView extends VBox {
 		#if js
 		js.Browser.window.open(studioLink.text, "_blank");
 		#elseif openfl
-		// For Windows, Mac, Linux
 		Lib.getURL(new URLRequest(studioLink.text));
 		#end
 	}

@@ -22,6 +22,10 @@ class Workspace {
 		if (activeSceneId == null)
 			activeSceneId = scene.id;
 	}
+	
+	public function addSchema(schema:NodeGroupSchema) {
+		schemas.push(schema);
+	}
 
 	public function resolveIdCollision(baseId:String):String {
 		var id = baseId;

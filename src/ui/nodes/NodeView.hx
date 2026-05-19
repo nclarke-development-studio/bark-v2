@@ -16,12 +16,23 @@ import ui.nodes.PortView;
 
 using haxe.ui.animation.AnimationTools;
 
+enum NodeLoD {
+	Full;
+	Compact;
+	Minimal;
+}
+
 class NodeView extends VBox {
 	public var selected:Bool = false;
 	public var data:NodeData;
 	public var fieldContainer:VBox;
+
+	var fieldButtons:HBox;
+
 	// TODO: bit of a hack here
 	public var idInput:TextField;
+
+	private var _currentLoD:NodeLoD = Full;
 
 	// Callbacks
 	public var onRequestContextMenu:(n:NodeView) -> Void;
@@ -34,6 +45,7 @@ class NodeView extends VBox {
 
 	public function new(data:NodeData) {
 		super();
+		this.cacheAsBitmap = true;
 		this.data = data;
 		addClass("node");
 		top = data.y;
@@ -144,17 +156,20 @@ class NodeView extends VBox {
 	}
 
 	private function addFieldButtons():Void {
-		var btnBox = new HBox();
-		btnBox.continuous = true;
-		btnBox.percentWidth = 100;
-		addComponent(btnBox);
+		fieldButtons = new HBox();
+		fieldButtons.continuous = true;
+		fieldButtons.percentWidth = 100;
+		addComponent(fieldButtons);
 
 		var types = ["string", "text", "number", "boolean", "data"];
 		for (type in types) {
 			var btn = new Button();
 			btn.text = "Add " + type.charAt(0).toUpperCase() + type.substring(1);
 			btn.onClick = _ -> addField(type);
-			btnBox.addComponent(btn);
+			btn.registerEvent(MouseEvent.MOUSE_DOWN, (e) -> {
+				e.cancel();
+			});
+			fieldButtons.addComponent(btn);
 		}
 	}
 
@@ -184,6 +199,9 @@ class NodeView extends VBox {
 		keyInput.width = 100;
 		keyInput.text = field.key;
 		keyInput.onChange = _ -> field.key = keyInput.text;
+		keyInput.registerEvent(MouseEvent.MOUSE_DOWN, (e:MouseEvent) -> {
+			e.cancel();
+		});
 		grid.addComponent(keyInput);
 
 		var valueContainer = new Box();
@@ -195,12 +213,18 @@ class NodeView extends VBox {
 		switch (field.type) {
 			case "string", "number":
 				var ti = new TextField();
+				ti.registerEvent(MouseEvent.MOUSE_DOWN, (e:MouseEvent) -> {
+					e.cancel();
+				});
 				ti.percentWidth = 100;
 				ti.text = field.value;
 				ti.onChange = _ -> field.value = ti.text;
 				valueInput = ti;
 			case "text":
 				var ta = new TextArea();
+				ta.registerEvent(MouseEvent.MOUSE_DOWN, (e:MouseEvent) -> {
+					e.cancel();
+				});
 				ta.percentWidth = 100;
 				ta.height = 60;
 				ta.text = field.value;
@@ -208,6 +232,9 @@ class NodeView extends VBox {
 				valueInput = ta;
 			case "boolean":
 				var cb = new CheckBox();
+				cb.registerEvent(MouseEvent.MOUSE_DOWN, (e:MouseEvent) -> {
+					e.cancel();
+				});
 				cb.selected = field.value;
 				cb.onChange = _ -> field.value = cb.selected;
 				valueInput = cb;
@@ -373,6 +400,141 @@ class NodeView extends VBox {
 		if (data.fields != null) {
 			for (field in data.fields) {
 				createFieldRow(field);
+			}
+		}
+	}
+
+	// LoD
+
+	public function setLoD(lod:NodeLoD) {
+		if (_currentLoD == lod)
+			return; // Prevent redundant state updates
+		_currentLoD = lod;
+
+		// We disable bitmap caching while transitioning structural layouts
+		this.cacheAsBitmap = false;
+
+		switch (lod) {
+			case Full:
+				// Show everything
+				if (childComponents[0] != null)
+					childComponents[0].show(); // idRow
+				fieldContainer.show();
+				fieldButtons.show();
+				resetPortsToDefaultLayout();
+
+			case Compact, Minimal:
+				// Hide text boxes / inner interactive fields, keep ports accessible
+				if (childComponents[0] != null)
+					childComponents[0].hide(); // idRow
+				fieldContainer.hide();
+				fieldButtons.hide();
+				snapFieldsPortsToMainPorts();
+
+				// case Minimal:
+				// 	// High optimization: Hide structural containers and internal connections completely
+				// 	if (childComponents[0] != null)
+				// 		childComponents[0].hide();
+				// 	fieldContainer.hide();
+				// 	snapFieldsPortsToMainPorts();
+		}
+
+		// TODO: this causes a bit of a stick, so we need to counter-balance by having node visibility
+		invalidate();
+		// Re-enable hardware optimization after changing visibility properties
+		haxe.ui.Toolkit.callLater(() -> {
+			this.cacheAsBitmap = true;
+		});
+	}
+
+	/**
+	 * Sweeps through all ports and snaps field ports to the active positions of the main ports
+	 */
+	private function snapFieldsPortsToMainPorts() {
+		// Exact defaults based on your addPort rules
+		var mainInputX:Float = -5;
+		var mainInputY:Float = 10;
+		var mainOutputX:Float = this.width; // Fallback bound
+		var mainOutputY:Float = 10;
+
+		// 1. Snag the definitive values directly from your main ports' current placements
+		for (child in childComponents) {
+			if (Std.isOfType(child, PortView)) {
+				var pv:PortView = cast child;
+				if (pv.data.isMain) {
+					if (pv.data.direction == PortDirection.Input) {
+						mainInputX = pv.left;
+						mainInputY = pv.top;
+					} else {
+						mainOutputX = pv.left;
+						mainOutputY = pv.top;
+					}
+				}
+			}
+		}
+
+		// 2. Pass those exact positions recursively down to all nested row ports
+		snapPortsRecursive(this, mainInputX, mainInputY, mainOutputX, mainOutputY);
+	}
+
+	private function snapPortsRecursive(c:haxe.ui.core.Component, inX:Float, inY:Float, outX:Float, outY:Float) {
+		if (c == null)
+			return;
+
+		if (Std.isOfType(c, PortView)) {
+			var pv:PortView = cast c;
+			if (!pv.data.isMain) {
+				pv.includeInLayout = false;
+				pv.show();
+
+				// Determine target position relative to NodeView (this)
+				var targetX = (pv.data.direction == PortDirection.Input) ? inX : outX;
+				var targetY = (pv.data.direction == PortDirection.Input) ? inY : outY;
+
+				// Walk up the visual tree to find where this port is nested relative to 'this' NodeView
+				var p = pv.parentComponent;
+				var offsetX:Float = 0;
+				var offsetY:Float = 0;
+
+				while (p != null && p != this) {
+					offsetX += p.left;
+					offsetY += p.top;
+					p = p.parentComponent;
+				}
+
+				// Subtract the offset of its parent container sequence so it lands perfectly on top of the main port
+				pv.left = targetX - offsetX;
+				pv.top = targetY - offsetY;
+			}
+		}
+
+		for (child in c.childComponents) {
+			snapPortsRecursive(child, inX, inY, outX, outY);
+		}
+	}
+
+	/**
+	 * Restores original dynamic layout anchors when zooming back in
+	 */
+	private function resetPortsToDefaultLayout() {
+		// Rehydrate fields container components cleanly
+		rebuildFields();
+
+		// Enforce default rules for main structural layout ports
+		for (child in childComponents) {
+			if (Std.isOfType(child, PortView)) {
+				var pv:PortView = cast child;
+				pv.show();
+				if (pv.data.isMain) {
+					pv.includeInLayout = false;
+					if (pv.data.direction == PortDirection.Input) {
+						pv.left = -5;
+					} else {
+						var pw = (pv.width > 0) ? pv.width : 10;
+						pv.left = this.width - (pw / 2);
+					}
+					pv.top = 10;
+				}
 			}
 		}
 	}

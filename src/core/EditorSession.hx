@@ -27,7 +27,10 @@ import data.ConnectionData;
 import sys.io.File;
 #end
 #if js
+import js.html.Blob;
+import js.html.URL;
 import js.Browser;
+import js.lib.Uint8Array;
 #end
 #if nodejs
 import js.node.Fs;
@@ -431,9 +434,27 @@ class EditorSession implements IEditorSession {
 	public function loadScene() {
 		Dialogs.openFile(function(button, files) {
 			if (button == DialogButton.OK && files.length > 0) {
-				var data = GraphSerializer.loadScene(files[0].fullPath);
+				// get the correct data source based on target
+				#if js
+				var sourceData:String = null;
+				var fileInfo = files[0];
 
-				var filename = haxe.io.Path.withoutExtension(haxe.io.Path.withoutDirectory(files[0].fullPath));
+				if (fileInfo.text != null) {
+					sourceData = fileInfo.text;
+				} else if (fileInfo.bytes != null) {
+					sourceData = fileInfo.bytes.toString();
+				} else {
+					trace("Error: File was selected, but no content was read. Check your Dialogs.openFile options.");
+				}
+				#else
+				var sourceData = files[0].fullPath;
+				#end
+
+				var data = GraphSerializer.loadScene(sourceData);
+
+				// resolve filename safely
+				var rawPath = files[0].fullPath != null ? files[0].fullPath : files[0].name;
+				var filename = haxe.io.Path.withoutExtension(haxe.io.Path.withoutDirectory(rawPath));
 
 				var uniqueId = workspace.resolveIdCollision(filename);
 
@@ -469,9 +490,8 @@ class EditorSession implements IEditorSession {
 				#if nodejs
 				Fs.writeFileSync(path, data);
 				#elseif js
-				// On web, saveFile usually triggers a browser download automatically
-				// but if you need manual storage:
-				Browser.window.localStorage.setItem(path, data);
+				// if you need manual storage:
+				// Browser.window.localStorage.setItem(path, data);
 				#else
 				File.saveContent(path, data);
 				#end
@@ -506,9 +526,8 @@ class EditorSession implements IEditorSession {
 				#if nodejs
 				Fs.writeFileSync(path, data);
 				#elseif js
-				// On web, saveFile usually triggers a browser download automatically
-				// but if you need manual storage:
-				Browser.window.localStorage.setItem(path, data);
+				// if you need manual storage:
+				// Browser.window.localStorage.setItem(path, data);
 				#else
 				File.saveContent(path, data);
 				#end
@@ -581,9 +600,22 @@ class EditorSession implements IEditorSession {
 	public function loadWorkspace() {
 		Dialogs.openFile(function(button, files) {
 			if (button == DialogButton.OK && files.length > 0) {
-				workspace = GraphSerializer.loadWorkspace(files[0].fullPath);
+				#if js
+				var sourceData:String = null;
+				var fileInfo = files[0];
 
-				filePath = files[0].fullPath;
+				if (fileInfo.text != null) {
+					sourceData = fileInfo.text;
+				} else if (fileInfo.bytes != null) {
+					sourceData = fileInfo.bytes.toString();
+				} else {
+					trace("Error: File was selected, but no content was read. Check your Dialogs.openFile options.");
+				}
+				#else
+				var sourceData = files[0].fullPath;
+				#end
+
+				workspace = GraphSerializer.loadWorkspace(sourceData);
 
 				if (workspace.activeSceneId != null)
 					switchScene(workspace.activeSceneId);
@@ -604,7 +636,24 @@ class EditorSession implements IEditorSession {
 			#if nodejs
 			Fs.writeFileSync(filePath, data);
 			#elseif js
-			Browser.window.localStorage.setItem(filePath, data);
+			try {
+				// create a blob
+				var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
+
+				var anchor = Browser.document.createAnchorElement();
+
+				var objectUrl = URL.createObjectURL(blob);
+				anchor.href = objectUrl;
+
+				anchor.download = filePath;
+
+				Browser.document.body.appendChild(anchor);
+				anchor.click();
+				Browser.document.body.removeChild(anchor);
+				URL.revokeObjectURL(objectUrl);
+			} catch (e:Dynamic) {
+				trace("Browser download failed: " + e);
+			}
 			#else
 			File.saveContent(filePath, data);
 			#end
@@ -626,7 +675,24 @@ class EditorSession implements IEditorSession {
 				#if nodejs
 				Fs.writeFileSync(selectedPath, data);
 				#elseif js
-				Browser.window.localStorage.setItem(selectedPath, data);
+				try {
+					// create a blob
+					var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
+
+					var anchor = Browser.document.createAnchorElement();
+
+					var objectUrl = URL.createObjectURL(blob);
+					anchor.href = objectUrl;
+
+					anchor.download = filePath;
+
+					Browser.document.body.appendChild(anchor);
+					anchor.click();
+					Browser.document.body.removeChild(anchor);
+					URL.revokeObjectURL(objectUrl);
+				} catch (e:Dynamic) {
+					trace("Browser download failed: " + e);
+				}
 				#else
 				File.saveContent(selectedPath, data);
 				#end
@@ -659,7 +725,24 @@ class EditorSession implements IEditorSession {
 				#if nodejs
 				Fs.writeFileSync(selectedPath, data);
 				#elseif js
-				Browser.window.localStorage.setItem(selectedPath, data);
+				try {
+					// create a blob
+					var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
+
+					var anchor = Browser.document.createAnchorElement();
+
+					var objectUrl = URL.createObjectURL(blob);
+					anchor.href = objectUrl;
+
+					anchor.download = filePath;
+
+					Browser.document.body.appendChild(anchor);
+					anchor.click();
+					Browser.document.body.removeChild(anchor);
+					URL.revokeObjectURL(objectUrl);
+				} catch (e:Dynamic) {
+					trace("Browser download failed: " + e);
+				}
 				#else
 				File.saveContent(selectedPath, data);
 				#end
@@ -685,7 +768,6 @@ class EditorSession implements IEditorSession {
 	public function exportWorkspace() {
 		var exportMap = GraphSerializer.getExportFiles(workspace);
 
-		// Ask user where the main manifest file should go
 		Dialogs.saveFile(function(button, success, path) {
 			if (button == DialogButton.OK && success && path != null) {
 				#if (sys || nodejs)
@@ -706,6 +788,60 @@ class EditorSession implements IEditorSession {
 				#else
 				File.saveContent(path, manifest);
 				#end
+				#elseif js
+				try {
+					var zipEntries = new List<haxe.zip.Entry>();
+
+					for (fileName => content in exportMap) {
+						var bytes = haxe.io.Bytes.ofString(content);
+						var entry:haxe.zip.Entry = {
+							fileName: fileName,
+							fileSize: bytes.length,
+							dataSize: 0, // calculated by Writer if uncompressed, or set if compressed
+							data: bytes,
+							compressed: false, // false for quick archiving without heavy CPU overhead
+							fileTime: Date.now(),
+							crc32: haxe.crypto.Crc32.make(bytes)
+						};
+						zipEntries.add(entry);
+					}
+
+					var manifestContent = GraphSerializer.exportWorkspace(workspace);
+					var manifestBytes = haxe.io.Bytes.ofString(manifestContent);
+					var manifestName = haxe.io.Path.withoutDirectory(path);
+
+					var manifestEntry:haxe.zip.Entry = {
+						fileName: manifestName,
+						fileSize: manifestBytes.length,
+						dataSize: 0,
+						data: manifestBytes,
+						compressed: false,
+						fileTime: Date.now(),
+						crc32: haxe.crypto.Crc32.make(manifestBytes)
+					};
+					zipEntries.add(manifestEntry);
+
+					var output = new haxe.io.BytesOutput();
+					var zipWriter = new haxe.zip.Writer(output);
+					zipWriter.write(zipEntries);
+					var zipBytes = output.getBytes();
+
+					var uint8Array = new Uint8Array(zipBytes.getData(), 0, zipBytes.length);
+					var blob = new Blob([uint8Array], {type: "application/zip"});
+
+					var anchor = Browser.document.createAnchorElement();
+					var objectUrl = URL.createObjectURL(blob);
+
+					anchor.href = objectUrl;
+					anchor.download = '${workspace.name}_export.zip';
+
+					Browser.document.body.appendChild(anchor);
+					anchor.click();
+					Browser.document.body.removeChild(anchor);
+					URL.revokeObjectURL(objectUrl);
+				} catch (e:Dynamic) {
+					trace("Failed to generate zip file: " + e);
+				}
 				#end
 
 				NotificationManager.instance.addNotification({

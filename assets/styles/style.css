@@ -107,3 +107,9 @@
   margin: auto;
   display: block;
 }
+
+#contentLayer {
+  background-color: none;
+  background-image: none;
+  border: none;
+}

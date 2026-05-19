@@ -3,6 +3,8 @@ package util;
 #if !js
 import sys.io.File;
 import sys.FileSystem;
+#elseif js
+import js.Browser;
 #end
 import haxe.Json;
 
@@ -16,7 +18,22 @@ class Config {
 	public static var current:AppConfig;
 
 	public static function load() {
-		#if !js
+		#if js
+		var content = Browser.window.localStorage.getItem(CONFIG_FILE);
+		if (content == null) {
+			current = {
+				isFirstRun: true,
+				lastOpenedProject: "",
+			};
+			save();
+		} else {
+			try {
+				current = Json.parse(content);
+			} catch (e:Dynamic) {
+				current = {isFirstRun: true, lastOpenedProject: ""};
+			}
+		}
+		#else
 		if (!FileSystem.exists(CONFIG_FILE)) {
 			current = {
 				isFirstRun: true,
@@ -31,16 +48,16 @@ class Config {
 	}
 
 	public static function save() {
-		#if !js
 		var content = Json.stringify(current, null, "    ");
+		#if js
+		Browser.window.localStorage.setItem(CONFIG_FILE, content);
+		#else
 		File.saveContent(CONFIG_FILE, content);
 		#end
 	}
 
 	public static function setFirstRunComplete() {
-		#if !js
 		current.isFirstRun = false;
 		save();
-		#end
 	}
 }
