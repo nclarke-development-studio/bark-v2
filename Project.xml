@@ -9,6 +9,9 @@
   <window allow-high-dpi="true" if="html5" />
   <window high-dpi="true" if="html5" />
 
+  <!-- html5 template -->
+  <template path="templates/html5/index.html" rename="index.html" if="html5" />
+
 
   <icon path="assets/icons/icon-16.png" size="16" />
   <icon path="assets/icons/icon-32.png" size="32" />
