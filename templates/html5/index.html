@@ -49,6 +49,48 @@
 
     <div id="openfl-content"></div>
 
+    <div
+      id="dpi-warning"
+      style="
+        display: none;
+        background: #fff3cd;
+        color: #856404;
+        padding: 10px;
+        text-align: center;
+        font-family: sans-serif;
+        font-size: 14px;
+        border-bottom: 1px solid #ffeeba;
+        position: relative;
+        z-index: 9999;
+      "
+    >
+      <strong>Notice:</strong> High-DPI touch device detected. If the layout
+      appears overly zoomed, please use the native desktop (HashLink) build for
+      an optimal experience.
+      <button
+        onclick="document.getElementById('dpi-warning').style.display = 'none'"
+        style="
+          margin-left: 15px;
+          cursor: pointer;
+          border: 1px solid #856404;
+          background: transparent;
+          border-radius: 3px;
+        "
+      >
+        Dismiss
+      </button>
+    </div>
+
+    <script>
+      // check if it's a high-pixel-density screen AND supports touch
+      if (
+        window.devicePixelRatio > 1.2 &&
+        ("ontouchstart" in window || navigator.maxTouchPoints > 0)
+      ) {
+        document.getElementById("dpi-warning").style.display = "block";
+      }
+    </script>
+
     <script type="text/javascript">
       lime.embed("Bark", "openfl-content", 0, 0, { parameters: {} });
     </script>

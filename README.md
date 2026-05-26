@@ -4,7 +4,7 @@
   <img width="300px" src="./assets/images/bark.png" alt="Bark logo" />
 </p>
 
-A relational JSON editor geared towards game dialogue editing, built using [Haxe](https://haxe.org/) and [HaxeUI](https://haxeui.org/).
+[Bark](https://bark.nclarke.dev) is a relational JSON editor geared towards game dialogue editing, built using [Haxe](https://haxe.org/) and [HaxeUI](https://haxeui.org/).
 
 ## Why?
 
@@ -26,6 +26,8 @@ This project is built and verified using the following version matrix. Ensure yo
 | **OpenFL**        | `9.5.0` | Rendering framework          |
 | **Lime**          | `8.3.0` | Native backend layer         |
 | **HashLink**      | `git`   | Target VM for Desktop builds |
+
+> ⚠️ **Note on Web (HTML5) Scaling:** > Due to the way browsers handle high-DPI viewport scaling on hybrid touch devices (such as the Microsoft Surface Pro), the web version may appear artificially zoomed in. For the best, most pixel-accurate experience on these devices, we highly recommend running the native **HashLink Desktop Build** (`lime test hl`).
 
 ---
 
