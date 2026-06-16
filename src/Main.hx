@@ -1,5 +1,6 @@
 package;
 
+import openfl.display.Stage;
 import ui.menus.GraphContextMenu;
 import ui.dialogs.UsageView;
 import haxe.ui.containers.dialogs.Dialog.DialogButton;
@@ -30,6 +31,24 @@ class Main {
 			app.title = "Bark Dialogue Editor";
 
 			app.ready(function() {
+
+				#if js
+				var windowScale = openfl.Lib.current.stage.window.scale;
+				trace("OpenFL Stage Window Scale: " + windowScale);
+
+				if (windowScale > 1) {
+					haxe.ui.Toolkit.scale = 1;
+
+					trace("toolkit scale: " + Toolkit.scale);
+				}
+
+				Browser.document.addEventListener("contextmenu", function(event) {
+					event.preventDefault();
+				});
+				#end
+
+
+
 				var root = new VBox();
 				root.percentWidth = 100;
 				root.percentHeight = 100;
@@ -75,15 +94,8 @@ class Main {
 					showOnboarding();
 					Config.setFirstRunComplete();
 				}
-
-				#if js
-				Browser.document.addEventListener("contextmenu", function(event) {
-					event.preventDefault();
-				});
-				#end
-
-				app.start();
 			});
+			app.start();
 		} catch (e:Dynamic) {
 			trace(e);
 			trace(CallStack.toString(CallStack.exceptionStack()));

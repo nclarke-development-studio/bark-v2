@@ -5,13 +5,11 @@
 
   <window background="#FFFFFF" fps="60" />
   <window width="800" height="600" if="desktop" />
-  <window width="0" height="0" if="html5" />
-  <window allow-high-dpi="true" if="html5" />
-  <window high-dpi="true" if="html5" />
-
+  
   <!-- html5 template -->
   <template path="templates/html5/index.html" rename="index.html" if="html5" />
-
+  <window width="0" height="0" resizable="true" if="html5" />
+  <window allow-high-dpi="true" />
 
   <icon path="assets/icons/icon-16.png" size="16" />
   <icon path="assets/icons/icon-32.png" size="32" />
